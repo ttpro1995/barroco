@@ -23,15 +23,7 @@
  */
 package test;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+import runnable.Downloader;
 
 /**
  *
@@ -41,34 +33,9 @@ public class Sandbox {
 
     static final String URL_STR = "https://docs.oracle.com/javase/tutorial/collections/interfaces/examples/dictionary.txt";
 
-    public static void main(String[] args) throws MalformedURLException, IOException {
-        URL url = new URL(URL_STR);
-        InputStream inStream = getRequiredInputStream(url, 0, 1023);
-        handleInputStream(inStream, "test_function");
-        System.out.println("Mfofo");
-    }
-
-    private static InputStream getRequiredInputStream(URL url, int from, int to) 
-            throws IOException {
-        HttpURLConnection connection = 
-                (HttpURLConnection) new URL(URL_STR).openConnection();
-        
-        String rangeOption = new StringBuilder("bytes=")
-                .append(from)
-                .append('-')
-                .append(to).toString();
-        
-        
-        
-        connection.setRequestProperty("Range", rangeOption);    
-        return connection.getInputStream();
-    }
-    
-    private static void handleInputStream(InputStream inputStream, String name)
-            throws FileNotFoundException, IOException {
-        ReadableByteChannel channel = Channels.newChannel(inputStream);
-        FileOutputStream outStream = new FileOutputStream(name);
-        
-        outStream.getChannel().transferFrom(channel, 0, Long.MAX_VALUE);
+    public static void main(String[] args) throws Exception {
+        Downloader task = new Downloader(URL_STR, 0, 199, "test_function2");
+        task.run();
+        System.out.println("YO!");
     }
 }
