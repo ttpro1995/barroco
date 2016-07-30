@@ -33,7 +33,7 @@ import java.util.logging.Logger;
  */
 public class Tracker implements Runnable {
 
-    private static final int REFRESH_TIME = 800;
+    private static final int REFRESH_TIME = 750;
 
     private final Slave slave;
     private final File file;
@@ -57,6 +57,6 @@ public class Tracker implements Runnable {
                 Logger.getLogger(Tracker.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        System.out.printf("REPORT -- Thread %d finished!\n", slave.getId());
+        System.out.printf("REPORT ------------------- Thread %d finished!\n", slave.getId());
     }
 }

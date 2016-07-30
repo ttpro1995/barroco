@@ -32,17 +32,14 @@ import runnable.Master;
 public class Sandbox {
 
     public static void main(String[] args) throws Exception {
-//        try {
-//            int connections = Integer.parseInt(args[1]);
-//            String url = args[0];
-//
-//            Master master = new Master(null, connections, url);
-//            master.run();
-//        } catch (Exception e) {
-//            System.out.println("Wrong format!");
-//        }
+        try {
+            int connections = Integer.parseInt(args[1]);
+            String url = args[0];
 
-        Master master = new Master(null, 8, "http://imslp.nl/imglnks/usimg/b/bf/IMSLP83284-PMLP82079-3Bach1.mp3");
-        master.run();
+            Master master = new Master(null, connections, url);
+            master.run();
+        } catch (Exception e) {
+            System.out.println("Wrong format!");
+        }
     }
 }

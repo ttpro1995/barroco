@@ -72,8 +72,10 @@ public class Master implements Runnable {
                 threadPool.submit(new Tracker(curSlave));
             }
 
+            System.out.println("\n---------------------DOWNLOAD PHASE----------------------\n");
             threadPool.shutdown();
             threadPool.awaitTermination(14, TimeUnit.DAYS);
+            System.out.println("\n---------------------MERGE PHASE----------------------\n");
 
             util.merge(infoList);
 
