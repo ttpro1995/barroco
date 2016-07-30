@@ -32,14 +32,14 @@ import java.net.URL;
  * An instance of this class provides necessary information to class Downloader
  * @author hkhoi
  */
-public class DownloadInfo {
+public class Info {
 
     private final HttpURLConnection connection;
     private final long start;
     private long end;
     private final String name;
 
-    public DownloadInfo(String url, String name,
+    public Info(String url, String name,
             long start, long end) throws MalformedURLException, IOException {
         this.start = start;
         this.end = end;

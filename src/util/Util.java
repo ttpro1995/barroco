@@ -23,10 +23,16 @@
  */
 package util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * This class supports some utility static functions.
@@ -47,13 +53,13 @@ public class Util {
                 = (HttpURLConnection) (new URL(url)).openConnection();
     }
 
-    public long getContentLength() throws MalformedURLException, IOException {
+    private long getContentLength() throws MalformedURLException, IOException {
         return Long.parseLong(connection.getHeaderField("Content-Length"));
     }
 
-    public DownloadInfo[] splitFiles(String filename, int parts)
+    public Info[] split(String filename, int parts)
             throws IOException {
-        DownloadInfo[] result = new DownloadInfo[parts];
+        Info[] result = new Info[parts];
 
         long total = getContentLength();
         long partSize = total / parts;
@@ -68,7 +74,7 @@ public class Util {
                     .append(POSTFIX)
                     .append(i);
 
-            result[i] = new DownloadInfo(url, nameBuilder.toString(),
+            result[i] = new Info(url, nameBuilder.toString(),
                     current, current + partSize);
 
             current += partSize;
@@ -79,8 +85,47 @@ public class Util {
         return result;
     }
 
+    public void merge(Info[] info) throws FileNotFoundException, IOException {
+        File firstFile = new File(info[0].getName());
+        
+        String absPath = firstFile.getAbsolutePath();
+        String fileName = firstFile.getName();
+        
+        String dirPath = absPath.substring(0, absPath.length() - fileName.length());
+        
+        String actualName = firstFile.getName();
+        actualName = actualName.substring(PREFIX.length(), 
+                actualName.length() - 1 - POSTFIX.length());
+    
+        String actualFullPath = dirPath + actualName;
+        
+        FileOutputStream outStream = null;
+        outStream = new FileOutputStream(actualFullPath);
+        WritableByteChannel writeChannel = Channels.newChannel(outStream);
+        
+        try {
+            for (Info it : info) {
+                File curFile = new File(it.getName());
+                FileInputStream inStream = new FileInputStream(curFile);
+
+                inStream.getChannel().transferTo(0, Long.MAX_VALUE, writeChannel);
+
+                inStream.close();
+                curFile.delete();
+            }
+        } finally {
+            if (outStream != null) {
+                outStream.close();
+            }
+        }
+    }
+    
+    /**
+     * Get the default name, will implement later
+     * @return 
+     */
     public String getContentDisposition() {
-        return connection.getHeaderField("ccontent-disposition");
+        return connection.getHeaderField("content-disposition");
     }
     
     /**

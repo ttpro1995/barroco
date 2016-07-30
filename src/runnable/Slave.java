@@ -34,7 +34,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import util.DownloadInfo;
+import util.Info;
 
 /**
  * Input: Content URL, start byte, end byte and file name Output: A portion of
@@ -42,7 +42,7 @@ import util.DownloadInfo;
  *
  * @author hkhoi
  */
-public class Downloader implements Runnable {
+public class Slave implements Runnable {
 
     private final HttpURLConnection connection;
     private final long startByte;
@@ -58,7 +58,7 @@ public class Downloader implements Runnable {
      * @param endByte
      * @param filename
      */
-    public Downloader(String urlString, long startByte, long endByte,
+    public Slave(String urlString, long startByte, long endByte,
             String filename) throws MalformedURLException, IOException {
         this.connection =
                 (HttpURLConnection) (new URL(urlString)).openConnection();
@@ -67,7 +67,7 @@ public class Downloader implements Runnable {
         this.filename = filename;
     }
 
-    public Downloader(DownloadInfo downloadInfo) {
+    public Slave(Info downloadInfo) {
         this.filename = downloadInfo.getName();
         this.connection = downloadInfo.getConnection();
         this.startByte = downloadInfo.getStart();
@@ -76,27 +76,23 @@ public class Downloader implements Runnable {
 
     @Override
     public void run() {
-        Logger.getLogger(Downloader.class.getName())
-                .log(Level.INFO, "Downloading: " + filename);
         InputStream inputStream = null;
         try {
             inputStream = getRequiredInputStream(startByte, endByte);
             handleInputStream(inputStream, filename);
         } catch (IOException ex) {
-            Logger.getLogger(Downloader.class.getName())
+            Logger.getLogger(Slave.class.getName())
                     .log(Level.SEVERE, null, ex);
         } finally {
             if (inputStream != null) {
                 try {
                     inputStream.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(Downloader.class.getName())
+                    Logger.getLogger(Slave.class.getName())
                             .log(Level.SEVERE, null, ex);
                 }
             }
         }
-        Logger.getLogger(Downloader.class.getName())
-                .log(Level.INFO, "Finished: " + filename);
     }
 
     /**
