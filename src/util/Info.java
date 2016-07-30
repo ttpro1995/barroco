@@ -38,9 +38,11 @@ public class Info {
     private final long start;
     private long end;
     private final String name;
-
-    public Info(String url, String name,
+    private final int id;
+    
+    public Info(String url, String name, int id,
             long start, long end) throws MalformedURLException, IOException {
+        this.id = id;
         this.start = start;
         this.end = end;
         this.name = name;
@@ -67,14 +69,8 @@ public class Info {
     public void setEnd(long end) {
         this.end = end;
     }
-    
-    /**
-     * For testing purpose
-     *
-     * @return
-     */
-    @Override
-    public String toString() {
-        return "FileRange{" + "start=" + start + ", end=" + end + ", name=" + name + '}';
+
+    public int getId() {
+        return id;
     }
 }

@@ -28,10 +28,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import util.Info;
@@ -44,10 +40,16 @@ import util.Info;
  */
 public class Slave implements Runnable {
 
+    private final int BUFFER_SIZE = 1024 * 8;
+    
     private final HttpURLConnection connection;
     private final long startByte;
     private final long endByte;
     private final String filename;
+    private volatile long transfered = 0;
+    private final long total;
+    private boolean up = true; 
+    private final int id;
 
     /**
      * Constructor, give it everything you have
@@ -58,36 +60,18 @@ public class Slave implements Runnable {
      * @param endByte
      * @param filename
      */
-    public Slave(String urlString, long startByte, long endByte,
-            String filename) throws MalformedURLException, IOException {
-        
-        System.out.println("> Initializing Slave: " + filename);
-        
-        this.connection =
-                (HttpURLConnection) (new URL(urlString)).openConnection();
-        this.startByte = startByte;
-        this.endByte = endByte;
-        this.filename = filename;
-        
-        System.out.println("> Done initailizing slave");
-    }
 
     public Slave(Info downloadInfo) {
-        System.out.println("> Initializing slave");
-        
         this.filename = downloadInfo.getName();
         this.connection = downloadInfo.getConnection();
         this.startByte = downloadInfo.getStart();
         this.endByte = downloadInfo.getEnd();
-        
-        System.out.println("> Done initializing slave: " + filename);
+        this.total = this.endByte - this.startByte;
+        this.id = downloadInfo.getId();
     }
 
     @Override
     public void run() {
-        
-        System.out.println("Slave is running: " + filename + ": " + startByte + "->" + endByte);
-        
         InputStream inputStream = null;
         try {
             inputStream = getRequiredInputStream(startByte, endByte);
@@ -104,9 +88,8 @@ public class Slave implements Runnable {
                             .log(Level.SEVERE, null, ex);
                 }
             }
+            up = false;
         }
-        
-        System.out.println("Slave finished: " + filename);
     }
 
     /**
@@ -120,18 +103,12 @@ public class Slave implements Runnable {
      */
     private InputStream getRequiredInputStream(long from, long to)
             throws IOException {
-
-        System.out.println("> Get input stream");
-        
         String rangeOption = new StringBuilder("bytes=")
                 .append(from)
                 .append('-')
                 .append(to - 1).toString();
 
         connection.setRequestProperty("Range", rangeOption);
-        
-        System.out.println("> Done getting input stream");
-        
         return connection.getInputStream();
     }
 
@@ -145,21 +122,45 @@ public class Slave implements Runnable {
      */
     private void handleInputStream(InputStream inputStream, String name)
             throws FileNotFoundException, IOException {
-        
-        System.out.println("> Writting stream to file");
-        
         FileOutputStream outStream = null;
         try {
-            ReadableByteChannel channel = Channels.newChannel(inputStream);
             outStream = new FileOutputStream(name);
 
-            outStream.getChannel().transferFrom(channel, 0, Long.MAX_VALUE);
+            byte[] buffer = new byte[BUFFER_SIZE];
+            boolean done = false;
+            
+            while (!done) {
+                long curTransfer = inputStream.read(buffer, 0, BUFFER_SIZE);
+                if (curTransfer == -1) {
+                    done = true;
+                }
+                transfered += curTransfer;
+            }
         } finally {
             if (outStream != null) {
                 outStream.close();
             }
         }
-        
-        System.out.println("> Done writting to file");
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    
+    public long getTransfered() {
+        return transfered;
+    }
+
+    public long getTotal() {
+        return total;
+    }
+
+    public boolean isUp() {
+        return up;
+    }
+
+    public String getFilename() {
+        return filename;
     }
 }

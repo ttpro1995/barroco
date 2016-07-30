@@ -32,11 +32,11 @@ import runnable.Master;
 public class Sandbox {
 
     static final String URL_STR = 
-            "http://web4host.net/200MB.zip";
-    static final int PARTS = 16;
+            "http://www.baroquemusic.org/DLower/504BachophileTr1Cantata76.mp3";
+    static final int PARTS = 8;
 
     public static void main(String[] args) throws Exception {
-        Master master = new Master("test.zip", PARTS, URL_STR);
+        Master master = new Master(null, 16, URL_STR);
         master.run();
     }
 }

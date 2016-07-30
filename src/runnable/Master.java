@@ -29,6 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FilenameUtils;
 import util.Info;
 import util.Util;
 
@@ -43,6 +44,10 @@ public class Master implements Runnable {
     private final String urlString;
 
     public Master(String filename, int connections, String urlString) {
+        if (filename == null || filename.isEmpty()) {
+            filename = FilenameUtils.getName(urlString);
+        }
+
         this.filename = filename;
         this.connections = connections;
         this.urlString = urlString;
@@ -55,9 +60,11 @@ public class Master implements Runnable {
             Util util = new Util(urlString);
 
             Info[] infoList = util.split(filename, connections);
-            
+
             for (Info it : infoList) {
-                threadPool.submit(new Slave(it));
+                Slave curSlave = new Slave(it);
+                threadPool.submit(curSlave);
+                threadPool.submit(new Tracker(curSlave));
             }
 
             threadPool.shutdown();

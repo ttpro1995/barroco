@@ -74,7 +74,7 @@ public class Util {
                     .append(POSTFIX)
                     .append(i);
 
-            result[i] = new Info(url, nameBuilder.toString(),
+            result[i] = new Info(url, nameBuilder.toString(), i,
                     current, current + partSize);
 
             current += partSize;
@@ -86,9 +86,6 @@ public class Util {
     }
 
     public void merge(Info[] info) throws FileNotFoundException, IOException {
-        
-        System.out.println("> Merging starts");
-        
         File firstFile = new File(info[0].getName());
         
         String absPath = firstFile.getAbsolutePath();
@@ -106,11 +103,16 @@ public class Util {
         outStream = new FileOutputStream(actualFullPath);
         WritableByteChannel writeChannel = Channels.newChannel(outStream);
         
+        if (info.length == 1) {
+            System.out.println("yo");
+            File curFile = new File(info[0].getName());
+            curFile.renameTo(new File(actualName));
+            
+            return;
+        }
+        
         try {
             for (Info it : info) {
-                
-                System.out.println("Merging: " + it.getName());
-                
                 File curFile = new File(it.getName());
                 FileInputStream inStream = new FileInputStream(curFile);
 
@@ -124,7 +126,5 @@ public class Util {
                 outStream.close();
             }
         }
-        
-        System.out.println("> Merging ends");
     }
 }
