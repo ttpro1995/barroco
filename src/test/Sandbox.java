@@ -23,12 +23,7 @@
  */
 package test;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import runnable.Slave;
-import util.Info;
-import util.Util;
+import runnable.Master;
 
 /**
  *
@@ -36,28 +31,12 @@ import util.Util;
  */
 public class Sandbox {
 
-    static final String URL_STR = "https://docs.oracle.com/javase/tutorial/collections/interfaces/examples/dictionary.txt";
-    static final int PARTS = 8;
+    static final String URL_STR = 
+            "http://web4host.net/200MB.zip";
+    static final int PARTS = 16;
 
     public static void main(String[] args) throws Exception {
-        Util util = new Util(URL_STR);
-        
-        ExecutorService threadPool = Executors.newFixedThreadPool(PARTS);
-        
-        Info[] infoList = util.split("dicky_dick.txt", PARTS);
-        
-        for (Info it : infoList) {
-            threadPool.submit(new Slave(it));
-        }
-        
-        System.out.println("> Downloading");
-        
-        threadPool.shutdown();
-        threadPool.awaitTermination(1, TimeUnit.DAYS);
-        
-        System.out.println("> Merging");
-        util.merge(infoList);
-        
-        System.out.println("All done");
+        Master master = new Master("test.zip", PARTS, URL_STR);
+        master.run();
     }
 }

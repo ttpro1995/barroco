@@ -60,22 +60,34 @@ public class Slave implements Runnable {
      */
     public Slave(String urlString, long startByte, long endByte,
             String filename) throws MalformedURLException, IOException {
+        
+        System.out.println("> Initializing Slave: " + filename);
+        
         this.connection =
                 (HttpURLConnection) (new URL(urlString)).openConnection();
         this.startByte = startByte;
         this.endByte = endByte;
         this.filename = filename;
+        
+        System.out.println("> Done initailizing slave");
     }
 
     public Slave(Info downloadInfo) {
+        System.out.println("> Initializing slave");
+        
         this.filename = downloadInfo.getName();
         this.connection = downloadInfo.getConnection();
         this.startByte = downloadInfo.getStart();
         this.endByte = downloadInfo.getEnd();
+        
+        System.out.println("> Done initializing slave: " + filename);
     }
 
     @Override
     public void run() {
+        
+        System.out.println("Slave is running: " + filename + ": " + startByte + "->" + endByte);
+        
         InputStream inputStream = null;
         try {
             inputStream = getRequiredInputStream(startByte, endByte);
@@ -93,6 +105,8 @@ public class Slave implements Runnable {
                 }
             }
         }
+        
+        System.out.println("Slave finished: " + filename);
     }
 
     /**
@@ -107,12 +121,17 @@ public class Slave implements Runnable {
     private InputStream getRequiredInputStream(long from, long to)
             throws IOException {
 
+        System.out.println("> Get input stream");
+        
         String rangeOption = new StringBuilder("bytes=")
                 .append(from)
                 .append('-')
                 .append(to - 1).toString();
 
         connection.setRequestProperty("Range", rangeOption);
+        
+        System.out.println("> Done getting input stream");
+        
         return connection.getInputStream();
     }
 
@@ -126,6 +145,9 @@ public class Slave implements Runnable {
      */
     private void handleInputStream(InputStream inputStream, String name)
             throws FileNotFoundException, IOException {
+        
+        System.out.println("> Writting stream to file");
+        
         FileOutputStream outStream = null;
         try {
             ReadableByteChannel channel = Channels.newChannel(inputStream);
@@ -137,5 +159,7 @@ public class Slave implements Runnable {
                 outStream.close();
             }
         }
+        
+        System.out.println("> Done writting to file");
     }
 }

@@ -44,17 +44,17 @@ public class Util {
     private static final String PREFIX = ".";   // Make a file hidden
     private static final String POSTFIX = ".part";
 
-    private final HttpURLConnection connection;
     private final String url;
 
     public Util(String url) throws MalformedURLException, IOException {
         this.url = url;
-        connection
-                = (HttpURLConnection) (new URL(url)).openConnection();
     }
 
     private long getContentLength() throws MalformedURLException, IOException {
-        return Long.parseLong(connection.getHeaderField("Content-Length"));
+        HttpURLConnection head =
+                (HttpURLConnection) (new URL(url)).openConnection();
+        head.setRequestMethod("HEAD");
+        return Long.parseLong(head.getHeaderField("Content-Length"));
     }
 
     public Info[] split(String filename, int parts)
@@ -86,6 +86,9 @@ public class Util {
     }
 
     public void merge(Info[] info) throws FileNotFoundException, IOException {
+        
+        System.out.println("> Merging starts");
+        
         File firstFile = new File(info[0].getName());
         
         String absPath = firstFile.getAbsolutePath();
@@ -105,6 +108,9 @@ public class Util {
         
         try {
             for (Info it : info) {
+                
+                System.out.println("Merging: " + it.getName());
+                
                 File curFile = new File(it.getName());
                 FileInputStream inStream = new FileInputStream(curFile);
 
@@ -118,17 +124,7 @@ public class Util {
                 outStream.close();
             }
         }
+        
+        System.out.println("> Merging ends");
     }
-    
-    /**
-     * Get the default name, will implement later
-     * @return 
-     */
-    public String getContentDisposition() {
-        return connection.getHeaderField("content-disposition");
-    }
-    
-    /**
-     * Unit test for size consistency
-     */
 }
