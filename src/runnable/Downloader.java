@@ -28,36 +28,59 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import util.DownloadInfo;
 
 /**
+ * Input: Content URL, start byte, end byte and file name Output: A portion of
+ * file from start to end byte
  *
  * @author hkhoi
  */
 public class Downloader implements Runnable {
 
-    private final String urlString;
+    private final HttpURLConnection connection;
     private final long startByte;
     private final long endByte;
     private final String filename;
 
-    public Downloader(String urlString, long startByte,
-            long endByte, String filename) {
-        this.urlString = urlString;
+    /**
+     * Constructor, give it everything you have
+     * <b>Note</b>: startByte is <b>inclusive</b>, endByte is <b>exclusive</b>.
+     *
+     * @param urlString
+     * @param startByte
+     * @param endByte
+     * @param filename
+     */
+    public Downloader(String urlString, long startByte, long endByte,
+            String filename) throws MalformedURLException, IOException {
+        this.connection =
+                (HttpURLConnection) (new URL(urlString)).openConnection();
         this.startByte = startByte;
         this.endByte = endByte;
         this.filename = filename;
     }
 
+    public Downloader(DownloadInfo downloadInfo) {
+        this.filename = downloadInfo.getName();
+        this.connection = downloadInfo.getConnection();
+        this.startByte = downloadInfo.getStart();
+        this.endByte = downloadInfo.getEnd();
+    }
+
     @Override
     public void run() {
+        Logger.getLogger(Downloader.class.getName())
+                .log(Level.INFO, "Downloading: " + filename);
         InputStream inputStream = null;
         try {
-            inputStream = getRequiredInputStream(urlString, startByte, endByte);
+            inputStream = getRequiredInputStream(startByte, endByte);
             handleInputStream(inputStream, filename);
         } catch (IOException ex) {
             Logger.getLogger(Downloader.class.getName())
@@ -72,23 +95,40 @@ public class Downloader implements Runnable {
                 }
             }
         }
+        Logger.getLogger(Downloader.class.getName())
+                .log(Level.INFO, "Finished: " + filename);
     }
 
-    private InputStream getRequiredInputStream(String url, long from, long to)
+    /**
+     * Returns the InputStream from start to end byte of the file
+     *
+     * @param url
+     * @param from
+     * @param to
+     * @return
+     * @throws IOException
+     */
+    private InputStream getRequiredInputStream(long from, long to)
             throws IOException {
-        HttpURLConnection connection;
-        connection = (HttpURLConnection) new URL(url).openConnection();
 
         String rangeOption = new StringBuilder("bytes=")
                 .append(from)
                 .append('-')
-                .append(to).toString();
+                .append(to - 1).toString();
 
         connection.setRequestProperty("Range", rangeOption);
         return connection.getInputStream();
     }
 
-    private static void handleInputStream(InputStream inputStream, String name)
+    /**
+     * Receives an InputStream, then assembles it into a file
+     *
+     * @param inputStream
+     * @param name
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    private void handleInputStream(InputStream inputStream, String name)
             throws FileNotFoundException, IOException {
         FileOutputStream outStream = null;
         try {

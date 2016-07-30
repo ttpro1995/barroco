@@ -23,7 +23,12 @@
  */
 package test;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import runnable.Downloader;
+import util.DownloadInfo;
+import util.Util;
 
 /**
  *
@@ -32,10 +37,24 @@ import runnable.Downloader;
 public class Sandbox {
 
     static final String URL_STR = "https://docs.oracle.com/javase/tutorial/collections/interfaces/examples/dictionary.txt";
-
+    static final int PARTS = 8;
+    
     public static void main(String[] args) throws Exception {
-        Downloader task = new Downloader(URL_STR, 0, 199, "test_function2");
-        task.run();
-        System.out.println("YO!");
+        Util util = new Util(URL_STR);
+        
+        DownloadInfo[] info = util.splitFiles("dicky.txt", PARTS);
+
+        ExecutorService threadPool = Executors.newFixedThreadPool(PARTS);
+        
+        for (DownloadInfo it : info) {
+            threadPool.submit(new Downloader(it));
+        }
+        
+        System.out.println("Donwloading: " + PARTS + " part(s)");
+        
+        threadPool.shutdown();
+        threadPool.awaitTermination(1, TimeUnit.DAYS);
+        
+        System.out.println("Done!");
     }
 }
