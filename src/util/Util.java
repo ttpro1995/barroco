@@ -50,7 +50,7 @@ public class Util {
         this.url = url;
     }
 
-    private long getContentLength() throws MalformedURLException, IOException {
+    public long getContentLength() throws MalformedURLException, IOException {
         HttpURLConnection head =
                 (HttpURLConnection) (new URL(url)).openConnection();
         head.setRequestMethod("HEAD");
@@ -104,15 +104,18 @@ public class Util {
         WritableByteChannel writeChannel = Channels.newChannel(outStream);
         
         if (info.length == 1) {
-            System.out.println("yo");
+            System.out.println("MERGE: One file only, renaming...");
             File curFile = new File(info[0].getName());
             curFile.renameTo(new File(actualName));
             
             return;
         }
         
+        int id = 0;
+        
         try {
             for (Info it : info) {
+                System.out.printf("MERGE -- \tMerging part %d\n", id++);
                 File curFile = new File(it.getName());
                 FileInputStream inStream = new FileInputStream(curFile);
 

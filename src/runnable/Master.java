@@ -56,9 +56,14 @@ public class Master implements Runnable {
     @Override
     public void run() {
         try {
-            ExecutorService threadPool = Executors.newFixedThreadPool(connections);
+            long beginTime = System.currentTimeMillis();
+
+            System.out.println("REPORT -- \tPreparing to download...");
+
+            ExecutorService threadPool = Executors.newCachedThreadPool();
             Util util = new Util(urlString);
 
+            System.out.println("REPORT -- \tCalculating file parts...");
             Info[] infoList = util.split(filename, connections);
 
             for (Info it : infoList) {
@@ -71,6 +76,14 @@ public class Master implements Runnable {
             threadPool.awaitTermination(14, TimeUnit.DAYS);
 
             util.merge(infoList);
+
+            long finishTime = (System.currentTimeMillis() - beginTime) / 1000;
+
+            float sizeMb = (float) util.getContentLength() / 1024 / 1024;
+
+            System.out.printf("REPORT -- \tDownload finished in %d seconds\n",
+                    finishTime);
+            System.out.printf("REPORT -- \tSize(MB) = %.2f\n", sizeMb);
         } catch (InterruptedException ex) {
             Logger.getLogger(Master.class.getName()).log(Level.SEVERE,
                     "Takes more than 2 weeks to download, get a life!", ex);

@@ -23,6 +23,7 @@
  */
 package runnable;
 
+import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,26 +33,30 @@ import java.util.logging.Logger;
  */
 public class Tracker implements Runnable {
 
+    private static final int REFRESH_TIME = 800;
+
     private final Slave slave;
+    private final File file;
 
     public Tracker(Slave slave) {
+        this.file = new File(slave.getFilename());
         this.slave = slave;
     }
 
     @Override
     public void run() {
         while (slave.isUp()) {
-            float percentage
-                    = (float) slave.getTransfered() / slave.getTotal() * 100f;
-            System.out.printf("Thread %d: %.2f\n", slave.getId(), percentage);
+            float percentage = 
+                    (float) file.length() / slave.getTotal() * 100f;
+            System.out.printf("DOWNLOADING -- \tThread %d: %.2f%%\n",
+                    slave.getId(),
+                    percentage);
             try {
-                Thread.sleep(500);
+                Thread.sleep(REFRESH_TIME);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Tracker.class.getName()).log(Level.SEVERE, null, ex);
             }
-//            System.out.println("Thread: " + slave.getFilename() + " finished");
         }
-        System.out.printf("Thread %d finished!\n", slave.getId());
-
+        System.out.printf("REPORT -- Thread %d finished!\n", slave.getId());
     }
 }

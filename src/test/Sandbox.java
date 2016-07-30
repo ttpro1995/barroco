@@ -26,17 +26,23 @@ package test;
 import runnable.Master;
 
 /**
- *
+ *l
  * @author hkhoi
  */
 public class Sandbox {
 
-    static final String URL_STR = 
-            "http://www.baroquemusic.org/DLower/504BachophileTr1Cantata76.mp3";
-    static final int PARTS = 8;
-
     public static void main(String[] args) throws Exception {
-        Master master = new Master(null, 16, URL_STR);
+//        try {
+//            int connections = Integer.parseInt(args[1]);
+//            String url = args[0];
+//
+//            Master master = new Master(null, connections, url);
+//            master.run();
+//        } catch (Exception e) {
+//            System.out.println("Wrong format!");
+//        }
+
+        Master master = new Master(null, 8, "http://imslp.nl/imglnks/usimg/b/bf/IMSLP83284-PMLP82079-3Bach1.mp3");
         master.run();
     }
 }

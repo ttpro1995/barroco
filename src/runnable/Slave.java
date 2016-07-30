@@ -28,6 +28,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import util.Info;
@@ -41,14 +43,14 @@ import util.Info;
 public class Slave implements Runnable {
 
     private final int BUFFER_SIZE = 1024 * 8;
-    
+
     private final HttpURLConnection connection;
     private final long startByte;
     private final long endByte;
     private final String filename;
     private volatile long transfered = 0;
     private final long total;
-    private boolean up = true; 
+    private boolean up = true;
     private final int id;
 
     /**
@@ -60,7 +62,6 @@ public class Slave implements Runnable {
      * @param endByte
      * @param filename
      */
-
     public Slave(Info downloadInfo) {
         this.filename = downloadInfo.getName();
         this.connection = downloadInfo.getConnection();
@@ -126,16 +127,9 @@ public class Slave implements Runnable {
         try {
             outStream = new FileOutputStream(name);
 
-            byte[] buffer = new byte[BUFFER_SIZE];
-            boolean done = false;
-            
-            while (!done) {
-                long curTransfer = inputStream.read(buffer, 0, BUFFER_SIZE);
-                if (curTransfer == -1) {
-                    done = true;
-                }
-                transfered += curTransfer;
-            }
+            ReadableByteChannel channel = Channels.newChannel(inputStream);
+            outStream.getChannel().transferFrom(channel, 0, Long.MAX_VALUE);
+
         } finally {
             if (outStream != null) {
                 outStream.close();
@@ -147,7 +141,6 @@ public class Slave implements Runnable {
         return id;
     }
 
-    
     public long getTransfered() {
         return transfered;
     }
