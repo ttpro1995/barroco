@@ -32,6 +32,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import util.Constant;
 import util.Info;
 
 /**
@@ -42,29 +43,20 @@ import util.Info;
  */
 public class Slave implements Runnable {
 
-    private final int BUFFER_SIZE = 1024 * 8;
-
     private final HttpURLConnection connection;
     private final long startByte;
     private final long endByte;
     private final String filename;
     private volatile long transfered = 0;
     private final long total;
-    private boolean up = true;
+    private boolean up;
     private final int id;
-
-    /**
-     * Constructor, give it everything you have
-     * <b>Note</b>: startByte is <b>inclusive</b>, endByte is <b>exclusive</b>.
-     *
-     * @param urlString
-     * @param startByte
-     * @param endByte
-     * @param filename
-     */
+    
     public Slave(Info downloadInfo) {
+        this.up = true;
         this.filename = downloadInfo.getName();
         this.connection = downloadInfo.getConnection();
+        this.connection.setRequestProperty("User-Agent", Constant.USER_AGENT);
         this.startByte = downloadInfo.getStart();
         this.endByte = downloadInfo.getEnd();
         this.total = this.endByte - this.startByte;

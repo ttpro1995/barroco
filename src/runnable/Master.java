@@ -30,8 +30,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FilenameUtils;
+import util.ByteStreamUtil;
+import util.HeadRequestUtil;
 import util.Info;
-import util.Util;
 
 /**
  *
@@ -61,27 +62,42 @@ public class Master implements Runnable {
             System.out.println("REPORT -- \tPreparing to download...");
 
             ExecutorService threadPool = Executors.newCachedThreadPool();
-            Util util = new Util(urlString);
+            HeadRequestUtil headRequestUtil = new HeadRequestUtil(urlString);
+            ByteStreamUtil byteStreamUtil = new ByteStreamUtil();
 
+            int reponseCode = headRequestUtil.getReponseCode();
+
+            if (!headRequestUtil.isOK()) {
+                System.out.println("INFO -- \tResponse code: " + reponseCode);
+                System.out.println(
+                        "ERROR -- \tReponse = Not a successful response, terminating...");
+                return;
+            }
+
+            System.out.println("REPORT -- \tSuccessful request");
             System.out.println("REPORT -- \tCalculating file parts...");
-            Info[] infoList = util.split(filename, connections);
+            Info[] infoList = headRequestUtil.plan(filename, connections);
+            System.out.println(
+                    "\n-----------------DOWNLOADING PHASE----------_--------\n");
 
             for (Info it : infoList) {
                 Slave curSlave = new Slave(it);
                 threadPool.submit(curSlave);
-                threadPool.submit(new Tracker(curSlave));
+                threadPool.submit(new SlaveOverseer(curSlave));
             }
 
-            System.out.println("\n---------------------DOWNLOAD PHASE----------------------\n");
             threadPool.shutdown();
             threadPool.awaitTermination(14, TimeUnit.DAYS);
-            System.out.println("\n---------------------MERGE PHASE----------------------\n");
+            System.out.println(
+                    "\n--------------------MERGING PHASE--------------------\n");
 
-            util.merge(infoList);
+            byteStreamUtil.merge(infoList);
 
             long finishTime = (System.currentTimeMillis() - beginTime) / 1000;
 
-            float sizeMb = (float) util.getContentLength() / 1024 / 1024;
+            float sizeMb = 
+                    headRequestUtil.
+                            getContentLength(HeadRequestUtil.Unit.MEGABYTE);
 
             System.out.printf("REPORT -- \tDownload finished in %d seconds\n",
                     finishTime);
@@ -90,7 +106,7 @@ public class Master implements Runnable {
             Logger.getLogger(Master.class.getName()).log(Level.SEVERE,
                     "Takes more than 2 weeks to download, get a life!", ex);
         } catch (IOException ex) {
-            Logger.getLogger(Master.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Master.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
     }
 }

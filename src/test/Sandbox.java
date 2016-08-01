@@ -32,14 +32,17 @@ import runnable.Master;
 public class Sandbox {
 
     public static void main(String[] args) throws Exception {
-        try {
-            int connections = Integer.parseInt(args[1]);
-            String url = args[0];
-
-            Master master = new Master(null, connections, url);
-            master.run();
-        } catch (Exception e) {
-            System.out.println("Wrong format!");
-        }
+//        try {
+//            int connections = Integer.parseInt(args[1]);
+//            String url = args[0];
+//
+//            Master master = new Master(null, connections, url);
+//            master.run();
+//        } catch (Exception e) {
+//            System.out.println("Wrong format!");
+//        }
+        String link = "http://staruml.io/download/release/v2.7.0/StarUML-v2.7.0.dmg";
+        Master master = new Master(null, 16, link);
+        master.run();
     }
 }

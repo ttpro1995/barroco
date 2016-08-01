@@ -21,42 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package runnable;
-
-import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+package util;
 
 /**
  *
  * @author hkhoi
  */
-public class SlaveOverseer implements Runnable {
-
-    private static final int REFRESH_TIME = 750;
-
-    private final Slave slave;
-    private final File file;
-
-    public SlaveOverseer(Slave slave) {
-        this.file = new File(slave.getFilename());
-        this.slave = slave;
-    }
-
-    @Override
-    public void run() {
-        while (slave.isUp()) {
-            float percentage = 
-                    (float) file.length() / slave.getTotal() * 100f;
-            System.out.printf("DOWNLOADING -- \tThread %d: %.2f%%\n",
-                    slave.getId(),
-                    percentage);
-            try {
-                Thread.sleep(REFRESH_TIME);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(SlaveOverseer.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        System.out.printf("REPORT ------------------- \t\tThread %d finished!\n", slave.getId());
-    }
+public class Constant {
+    protected static final String PREFIX = ".";   // Make a file hidden
+    protected static final String POSTFIX = ".part";
+    public static final String USER_AGENT
+            = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36";
 }

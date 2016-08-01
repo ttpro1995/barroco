@@ -23,111 +23,84 @@
  */
 package util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
 
 /**
  * This class supports some utility static functions.
  *
  * @author hkhoi
  */
-public class Util {
-
-    private static final String PREFIX = ".";   // Make a file hidden
-    private static final String POSTFIX = ".part";
+public class HeadRequestUtil {
 
     private final String url;
+    private final HttpURLConnection headRequest;
 
-    public Util(String url) throws MalformedURLException, IOException {
+    public enum Unit {
+        BYTE, MEGABYTE;
+    }
+
+    public HeadRequestUtil(String url) throws MalformedURLException, IOException {
         this.url = url;
+        headRequest = (HttpURLConnection) (new URL(url)).openConnection();
+        headRequest.setRequestMethod("HEAD");
+        headRequest.setRequestProperty("User-Agent", Constant.USER_AGENT);
     }
 
-    public long getContentLength() throws MalformedURLException, IOException {
-        HttpURLConnection head =
-                (HttpURLConnection) (new URL(url)).openConnection();
-        head.setRequestMethod("HEAD");
-        return Long.parseLong(head.getHeaderField("Content-Length"));
+    public long getContentLength(Unit unit) throws MalformedURLException, IOException {
+        String contentLength = headRequest.getHeaderField("Content-Length");
+        if (contentLength == null || contentLength.isEmpty()) {
+            return Long.MAX_VALUE;
+        }
+        long result = Long.parseLong(contentLength);
+        switch (unit) {
+            case MEGABYTE:
+                result /= (1024 * 1024);
+                break;
+        }
+
+        return result;
     }
 
-    public Info[] split(String filename, int parts)
+    public Info[] plan(String filename, int parts)
             throws IOException {
-        Info[] result = new Info[parts];
+        Info[] slavePlans = new Info[parts];
 
-        long total = getContentLength();
-        long partSize = total / parts;
-        long current = 0;
         StringBuilder nameBuilder = new StringBuilder();
-        
-        for (int i = 0; i < result.length; ++i) {
+        long total = getContentLength(Unit.BYTE);
+        long partSize = Long.MAX_VALUE;
+        long current = 0;
+
+        if (slavePlans.length > 1) {   // Undefined Content-Length
+            partSize = total / parts;
+        }
+
+        for (int i = 0; i < slavePlans.length; ++i) {
             nameBuilder.setLength(0);   // Clear buffer
             nameBuilder
-                    .append(PREFIX)
+                    .append(Constant.PREFIX)
                     .append(filename)
-                    .append(POSTFIX)
+                    .append(Constant.POSTFIX)
                     .append(i);
 
-            result[i] = new Info(url, nameBuilder.toString(), i,
+            slavePlans[i] = new Info(url, nameBuilder.toString(), i,
                     current, current + partSize);
 
             current += partSize;
         }
 
-        result[result.length - 1].setEnd(total);
-        
-        return result;
+        slavePlans[slavePlans.length - 1].setEnd(total);
+
+        return slavePlans;
     }
 
-    public void merge(Info[] info) throws FileNotFoundException, IOException {
-        File firstFile = new File(info[0].getName());
-        
-        String absPath = firstFile.getAbsolutePath();
-        String fileName = firstFile.getName();
-        
-        String dirPath = absPath.substring(0, absPath.length() - fileName.length());
-        
-        String actualName = firstFile.getName();
-        actualName = actualName.substring(PREFIX.length(), 
-                actualName.length() - 1 - POSTFIX.length());
-    
-        String actualFullPath = dirPath + actualName;
-        
-        FileOutputStream outStream = null;
-        outStream = new FileOutputStream(actualFullPath);
-        WritableByteChannel writeChannel = Channels.newChannel(outStream);
-        
-        if (info.length == 1) {
-            System.out.println("MERGE: One file only, renaming...");
-            File curFile = new File(info[0].getName());
-            curFile.renameTo(new File(actualName));
-            
-            return;
-        }
-        
-        int id = 0;
-        
-        try {
-            for (Info it : info) {
-                System.out.printf("MERGE -- \tMerging part %d\n", id++);
-                File curFile = new File(it.getName());
-                FileInputStream inStream = new FileInputStream(curFile);
+    public int getReponseCode() throws IOException {
+        return headRequest.getResponseCode();
+    }
 
-                inStream.getChannel().transferTo(0, Long.MAX_VALUE, writeChannel);
-
-                inStream.close();
-                curFile.delete();
-            }
-        } finally {
-            if (outStream != null) {
-                outStream.close();
-            }
-        }
+    public boolean isOK() throws IOException {
+        return getReponseCode() / 100 == 2;
     }
 }
