@@ -52,6 +52,8 @@ public class HeadRequestUtil {
     public long getContentLength(Unit unit) throws MalformedURLException, IOException {
         String contentLength = headRequest.getHeaderField("Content-Length");
         if (contentLength == null || contentLength.isEmpty()) {
+            System.out.println(
+                    "INFO -- \tContent's size is unknown, download with 1 thread");
             return Long.MAX_VALUE;
         }
         long result = Long.parseLong(contentLength);
@@ -64,18 +66,19 @@ public class HeadRequestUtil {
         return result;
     }
 
-    public Info[] plan(String filename, int parts)
+    public Plan[] plan(String filename, int parts)
             throws IOException {
-        Info[] slavePlans = new Info[parts];
-
         StringBuilder nameBuilder = new StringBuilder();
         long total = getContentLength(Unit.BYTE);
         long partSize = Long.MAX_VALUE;
         long current = 0;
 
-        if (slavePlans.length > 1) {   // Undefined Content-Length
+        if (total == Long.MAX_VALUE) {   // Undefined Content-Length
             partSize = total / parts;
+            parts = 1;
         }
+
+        Plan[] slavePlans = new Plan[parts];
 
         for (int i = 0; i < slavePlans.length; ++i) {
             nameBuilder.setLength(0);   // Clear buffer
@@ -85,7 +88,7 @@ public class HeadRequestUtil {
                     .append(Constant.POSTFIX)
                     .append(i);
 
-            slavePlans[i] = new Info(url, nameBuilder.toString(), i,
+            slavePlans[i] = new Plan(url, nameBuilder.toString(), i,
                     current, current + partSize);
 
             current += partSize;

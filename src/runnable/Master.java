@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 import org.apache.commons.io.FilenameUtils;
 import util.ByteStreamUtil;
 import util.HeadRequestUtil;
-import util.Info;
+import util.Plan;
 
 /**
  *
@@ -76,11 +76,11 @@ public class Master implements Runnable {
 
             System.out.println("REPORT -- \tSuccessful request");
             System.out.println("REPORT -- \tCalculating file parts...");
-            Info[] infoList = headRequestUtil.plan(filename, connections);
+            Plan[] plans = headRequestUtil.plan(filename, connections);
             System.out.println(
                     "\n-----------------DOWNLOADING PHASE----------_--------\n");
 
-            for (Info it : infoList) {
+            for (Plan it : plans) {
                 Slave curSlave = new Slave(it);
                 threadPool.submit(curSlave);
                 threadPool.submit(new SlaveOverseer(curSlave));
@@ -91,7 +91,7 @@ public class Master implements Runnable {
             System.out.println(
                     "\n--------------------MERGING PHASE--------------------\n");
 
-            byteStreamUtil.merge(infoList);
+            byteStreamUtil.merge(plans);
 
             long finishTime = (System.currentTimeMillis() - beginTime) / 1000;
 

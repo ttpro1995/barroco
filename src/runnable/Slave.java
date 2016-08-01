@@ -23,17 +23,14 @@
  */
 package runnable;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import util.ByteStreamUtil;
 import util.Constant;
-import util.Info;
+import util.Plan;
 
 /**
  * Input: Content URL, start byte, end byte and file name Output: A portion of
@@ -51,8 +48,8 @@ public class Slave implements Runnable {
     private final long total;
     private boolean up;
     private final int id;
-    
-    public Slave(Info downloadInfo) {
+
+    public Slave(Plan downloadInfo) {
         this.up = true;
         this.filename = downloadInfo.getName();
         this.connection = downloadInfo.getConnection();
@@ -67,8 +64,9 @@ public class Slave implements Runnable {
     public void run() {
         InputStream inputStream = null;
         try {
-            inputStream = getRequiredInputStream(startByte, endByte);
-            handleInputStream(inputStream, filename);
+            inputStream = getRequiredInputStream();
+            ByteStreamUtil byteStreamUtil = new ByteStreamUtil();
+            byteStreamUtil.stream2File(inputStream, filename);
         } catch (IOException ex) {
             Logger.getLogger(Slave.class.getName())
                     .log(Level.SEVERE, null, ex);
@@ -94,39 +92,16 @@ public class Slave implements Runnable {
      * @return
      * @throws IOException
      */
-    private InputStream getRequiredInputStream(long from, long to)
+    private InputStream getRequiredInputStream()
             throws IOException {
         String rangeOption = new StringBuilder("bytes=")
-                .append(from)
+                .append(startByte)
                 .append('-')
-                .append(to - 1).toString();
+                .append(endByte - 1).toString();
 
         connection.setRequestProperty("Range", rangeOption);
+        connection.setRequestProperty("User-Agent", Constant.USER_AGENT);
         return connection.getInputStream();
-    }
-
-    /**
-     * Receives an InputStream, then assembles it into a file
-     *
-     * @param inputStream
-     * @param name
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
-    private void handleInputStream(InputStream inputStream, String name)
-            throws FileNotFoundException, IOException {
-        FileOutputStream outStream = null;
-        try {
-            outStream = new FileOutputStream(name);
-
-            ReadableByteChannel channel = Channels.newChannel(inputStream);
-            outStream.getChannel().transferFrom(channel, 0, Long.MAX_VALUE);
-
-        } finally {
-            if (outStream != null) {
-                outStream.close();
-            }
-        }
     }
 
     public int getId() {

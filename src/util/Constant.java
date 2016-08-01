@@ -30,6 +30,5 @@ package util;
 public class Constant {
     protected static final String PREFIX = ".";   // Make a file hidden
     protected static final String POSTFIX = ".part";
-    public static final String USER_AGENT
-            = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36";
+    public static final String USER_AGENT = "Googlebot";
 }

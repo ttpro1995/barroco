@@ -28,7 +28,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
 /**
@@ -36,7 +38,7 @@ import java.nio.channels.WritableByteChannel;
  * @author hkhoi
  */
 public class ByteStreamUtil {
-    public void merge(Info[] info) throws FileNotFoundException, IOException {
+    public void merge(Plan[] info) throws FileNotFoundException, IOException {
         File firstFile = new File(info[0].getName());
         
         // Name processing
@@ -61,7 +63,7 @@ public class ByteStreamUtil {
         int id = 0;
         
         try {
-            for (Info it : info) {
+            for (Plan it : info) {
                 System.out.printf("MERGE -- \tMerging part %d\n", id++);
                 File curFile = new File(it.getName());
                 try (FileInputStream inStream = new FileInputStream(curFile)) {
@@ -71,6 +73,22 @@ public class ByteStreamUtil {
             }
         } finally {
                 outStream.close();
+        }
+    }
+    
+    /**
+     * Receives an InputStream, then assembles it into a file
+     *
+     * @param inputStream
+     * @param name
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public void stream2File(InputStream inputStream, String name)
+            throws FileNotFoundException, IOException {
+        try (FileOutputStream outStream = new FileOutputStream(name)) {
+            ReadableByteChannel channel = Channels.newChannel(inputStream);
+            outStream.getChannel().transferFrom(channel, 0, Long.MAX_VALUE);
         }
     }
 }
