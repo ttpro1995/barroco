@@ -32,7 +32,7 @@ import java.net.URL;
  * An instance of this class provides necessary information to class Downloader
  * @author hkhoi
  */
-public class Info {
+public class Plan {
 
     private final HttpURLConnection connection;
     private final long start;
@@ -40,7 +40,7 @@ public class Info {
     private final String name;
     private final int id;
     
-    public Info(String url, String name, int id,
+    public Plan(String url, String name, int id,
             long start, long end) throws MalformedURLException, IOException {
         this.id = id;
         this.start = start;
