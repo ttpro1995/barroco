@@ -32,63 +32,55 @@ import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *
  * @author hkhoi
  */
 public class ByteStreamUtil {
-    public void merge(Plan[] info) throws FileNotFoundException, IOException {
-        File firstFile = new File(info[0].getName());
-        
+
+    public static void merge(Plan[] info) throws FileNotFoundException, IOException {
+        String absPath = new File(info[0].getFileAbsPath()).getAbsolutePath();
         // Name processing
-        String absPath = firstFile.getAbsolutePath();
-        String fileName = firstFile.getName();
-        String dirPath = absPath.substring(0, absPath.length() - fileName.length());
-        String actualName = firstFile.getName();
-        actualName = actualName.substring(Constant.PREFIX.length(), 
-                actualName.length() - 1 - Constant.POSTFIX.length());
-        String actualFullPath = dirPath + actualName;
-        
-        FileOutputStream outStream = new FileOutputStream(actualFullPath);
-        WritableByteChannel writeChannel = Channels.newChannel(outStream);
-        
+        String mergedBase = FilenameUtils.getBaseName(absPath);
+        String path = FilenameUtils.getPath(absPath);
+
+        mergedBase = mergedBase.substring(Constant.PREFIX.length(),
+                mergedBase.length() - 1 - Constant.POSTFIX.length());
+
+        String mergedAbsPath = path + mergedBase;
+
         if (info.length == 1) {
             System.out.println("INFO -- \tMERGE: One file only, renaming...");
-            File curFile = new File(info[0].getName());
-            curFile.renameTo(new File(actualName));
+            File curFile = new File(info[0].getFileAbsPath());
+            curFile.renameTo(new File(mergedAbsPath));
             return;
         }
-        
+
         int id = 0;
-        
-        try {
-            for (Plan it : info) {
+
+        for (Plan it : info) {
+            try (FileInputStream inStream = new FileInputStream(it.getFileAbsPath())) {
                 System.out.printf("MERGE -- \tMerging part %d\n", id++);
-                File curFile = new File(it.getName());
-                try (FileInputStream inStream = new FileInputStream(curFile)) {
-                    inStream.getChannel().transferTo(0, Long.MAX_VALUE, writeChannel);
-                }
-                curFile.delete();
+                stream2File(inStream, path, true);
             }
-        } finally {
-                outStream.close();
         }
     }
-    
-    /**
-     * Receives an InputStream, then assembles it into a file
-     *
-     * @param inputStream
-     * @param name
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
-    public void stream2File(InputStream inputStream, String name)
+
+    public static void stream2File(InputStream inputStream, String name, boolean fileFlag)
             throws FileNotFoundException, IOException {
         try (FileOutputStream outStream = new FileOutputStream(name)) {
-            ReadableByteChannel channel = Channels.newChannel(inputStream);
-            outStream.getChannel().transferFrom(channel, 0, Long.MAX_VALUE);
+            if (fileFlag) {
+                try (WritableByteChannel channel = Channels.newChannel(outStream)) {
+                    ((FileInputStream) inputStream).getChannel()
+                            .transferTo(0, Long.MAX_VALUE, channel);
+                }
+            } else {
+                try (ReadableByteChannel channel = Channels.newChannel(inputStream)) {
+                    outStream.getChannel().transferFrom(channel, 0, Long.MAX_VALUE);
+                }
+            }
         }
     }
 }

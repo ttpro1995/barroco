@@ -23,7 +23,9 @@
  */
 package runnable;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -31,11 +33,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FilenameUtils;
 import util.ByteStreamUtil;
-import util.HeadRequestUtil;
+import util.Constant;
+import util.HeadRequestHandler;
+import util.NameUtil;
 import util.Plan;
+import util.TimeUtil;
 
 /**
- *
+ * Master takes URL, filename and number of connections to 
+ * divide tasks for slaves
  * @author hkhoi
  */
 public class Master implements Runnable {
@@ -47,6 +53,9 @@ public class Master implements Runnable {
     public Master(String filename, int connections, String urlString) {
         if (filename == null || filename.isEmpty()) {
             filename = FilenameUtils.getName(urlString);
+            if (filename == null || filename.isEmpty()) {
+                filename = NameUtil.makeUniqueName(Constant.DEFAULT_NAME);
+            }
         }
 
         this.filename = filename;
@@ -62,9 +71,8 @@ public class Master implements Runnable {
             System.out.println("REPORT -- \tPreparing to download...");
 
             ExecutorService threadPool = Executors.newCachedThreadPool();
-            HeadRequestUtil headRequestUtil = new HeadRequestUtil(urlString);
-            ByteStreamUtil byteStreamUtil = new ByteStreamUtil();
-
+            HeadRequestHandler headRequestUtil = new HeadRequestHandler(urlString);
+            
             int reponseCode = headRequestUtil.getReponseCode();
 
             if (!headRequestUtil.isOK()) {
@@ -78,7 +86,7 @@ public class Master implements Runnable {
             System.out.println("REPORT -- \tCalculating file parts...");
             Plan[] plans = headRequestUtil.plan(filename, connections);
             System.out.println(
-                    "\n-----------------DOWNLOADING PHASE----------_--------\n");
+                    "\n-----------------DOWNLOADING PHASE-------------------\n");
 
             for (Plan it : plans) {
                 Slave curSlave = new Slave(it);
@@ -88,23 +96,30 @@ public class Master implements Runnable {
 
             threadPool.shutdown();
             threadPool.awaitTermination(14, TimeUnit.DAYS);
+
             System.out.println(
                     "\n--------------------MERGING PHASE--------------------\n");
+            ByteStreamUtil.merge(plans);
 
-            byteStreamUtil.merge(plans);
+            float sizeMb = 0;
 
+            if (plans.length == 1) {
+                sizeMb = (new File(filename)).length() / 1024 / 1024;
+            } else {
+                sizeMb
+                        = headRequestUtil.
+                        getContentLength(HeadRequestHandler.Unit.MEGABYTE);
+            }
+            
             long finishTime = (System.currentTimeMillis() - beginTime) / 1000;
-
-            float sizeMb = 
-                    headRequestUtil.
-                            getContentLength(HeadRequestUtil.Unit.MEGABYTE);
-
-            System.out.printf("REPORT -- \tDownload finished in %d seconds\n",
-                    finishTime);
+            String displayTime = TimeUtil.displayTime((int) finishTime);
+            
+            System.out.printf("REPORT -- \tDownload finished in %s\n",
+                    displayTime);
             System.out.printf("REPORT -- \tSize(MB) = %.2f\n", sizeMb);
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException | SocketTimeoutException ex) {
             Logger.getLogger(Master.class.getName()).log(Level.SEVERE,
-                    "Takes more than 2 weeks to download, get a life!", ex);
+                    "ABORT -- \t\tTime out!!", ex);
         } catch (IOException ex) {
             Logger.getLogger(Master.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }

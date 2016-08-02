@@ -29,7 +29,6 @@ import java.net.HttpURLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import util.ByteStreamUtil;
-import util.Constant;
 import util.Plan;
 
 /**
@@ -41,32 +40,21 @@ import util.Plan;
 public class Slave implements Runnable {
 
     private final HttpURLConnection connection;
-    private final long startByte;
-    private final long endByte;
-    private final String filename;
-    private volatile long transfered = 0;
-    private final long total;
     private boolean up;
-    private final int id;
+    private final Plan plan;
 
-    public Slave(Plan downloadInfo) {
+    public Slave(Plan plan) {
+        this.plan = plan;
         this.up = true;
-        this.filename = downloadInfo.getName();
-        this.connection = downloadInfo.getConnection();
-        this.connection.setRequestProperty("User-Agent", Constant.USER_AGENT);
-        this.startByte = downloadInfo.getStart();
-        this.endByte = downloadInfo.getEnd();
-        this.total = this.endByte - this.startByte;
-        this.id = downloadInfo.getId();
+        this.connection = plan.getConnection();
     }
 
     @Override
     public void run() {
         InputStream inputStream = null;
         try {
-            inputStream = getRequiredInputStream();
-            ByteStreamUtil byteStreamUtil = new ByteStreamUtil();
-            byteStreamUtil.stream2File(inputStream, filename);
+            inputStream = plan.getInputStream();
+            ByteStreamUtil.stream2File(inputStream, plan.getFileAbsPath(), false);
         } catch (IOException ex) {
             Logger.getLogger(Slave.class.getName())
                     .log(Level.SEVERE, null, ex);
@@ -82,45 +70,12 @@ public class Slave implements Runnable {
             up = false;
         }
     }
-
-    /**
-     * Returns the InputStream from start to end byte of the file
-     *
-     * @param url
-     * @param from
-     * @param to
-     * @return
-     * @throws IOException
-     */
-    private InputStream getRequiredInputStream()
-            throws IOException {
-        String rangeOption = new StringBuilder("bytes=")
-                .append(startByte)
-                .append('-')
-                .append(endByte - 1).toString();
-
-        connection.setRequestProperty("Range", rangeOption);
-        connection.setRequestProperty("User-Agent", Constant.USER_AGENT);
-        return connection.getInputStream();
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public long getTransfered() {
-        return transfered;
-    }
-
-    public long getTotal() {
-        return total;
-    }
-
+    
     public boolean isUp() {
         return up;
     }
 
-    public String getFilename() {
-        return filename;
+    public Plan getPlan() {
+        return plan;
     }
 }

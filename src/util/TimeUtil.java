@@ -21,47 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package runnable;
-
-import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import util.Plan;
+package util;
 
 /**
  *
  * @author hkhoi
  */
-public class SlaveOverseer implements Runnable {
-
-    private static final int REFRESH_TIME = 750;
-
-    private final Slave slave;
-    private final File file;
-
-    public SlaveOverseer(Slave slave) {
-        this.file = new File(slave.getPlan().getFileAbsPath());
-        this.slave = slave;
-    }
-
-    @Override
-    public void run() {
-        Plan plan = slave.getPlan();
-        long total = plan.bytes2Download();
-        int id = plan.getId();
-
-        while (slave.isUp()) {
-            float percentage
-                    = (float) file.length() / total * 100f;
-            System.out.printf("DOWNLOADING -- \tThread %d: %.2f%%\n",
-                    id,
-                    percentage);
-            try {
-                Thread.sleep(REFRESH_TIME);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(SlaveOverseer.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        System.out.printf("REPORT ------------------- \t\tThread %d finished!\n", id);
+public class TimeUtil {
+    
+    public static String displayTime(int seconds) {
+        // TODO: Impleent TimeUtil.displayTime(int second);
+        return null;
     }
 }

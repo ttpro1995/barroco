@@ -31,4 +31,6 @@ public class Constant {
     protected static final String PREFIX = ".";   // Make a file hidden
     protected static final String POSTFIX = ".part";
     public static final String USER_AGENT = "Googlebot";
+    public static final int TIME_OUT = 6000;
+    public static final String DEFAULT_NAME = "web.html";
 }

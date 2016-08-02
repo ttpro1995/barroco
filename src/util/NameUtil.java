@@ -21,47 +21,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package runnable;
+package util;
 
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import util.Plan;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *
  * @author hkhoi
  */
-public class SlaveOverseer implements Runnable {
+public class NameUtil {
 
-    private static final int REFRESH_TIME = 750;
+    public static String makeUniqueName(String filename) {
+        File file = new File(filename);
+        String dir = FilenameUtils.getPath(filename);
+        System.out.println(">>DEBUG: " + filename);
+        while (file.exists() && !file.isDirectory()) {
+            String base = FilenameUtils.getBaseName(filename);
+            String extension = FilenameUtils.getExtension(filename);
 
-    private final Slave slave;
-    private final File file;
-
-    public SlaveOverseer(Slave slave) {
-        this.file = new File(slave.getPlan().getFileAbsPath());
-        this.slave = slave;
-    }
-
-    @Override
-    public void run() {
-        Plan plan = slave.getPlan();
-        long total = plan.bytes2Download();
-        int id = plan.getId();
-
-        while (slave.isUp()) {
-            float percentage
-                    = (float) file.length() / total * 100f;
-            System.out.printf("DOWNLOADING -- \tThread %d: %.2f%%\n",
-                    id,
-                    percentage);
-            try {
-                Thread.sleep(REFRESH_TIME);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(SlaveOverseer.class.getName()).log(Level.SEVERE, null, ex);
+            for (int i = 0; i < Integer.MAX_VALUE; ++i) {
+                String candidate = base + i + "." + extension;
+                System.out.println(">>DEBUG: " + file.getName());
+                file = new File(candidate );
             }
         }
-        System.out.printf("REPORT ------------------- \t\tThread %d finished!\n", id);
+
+        return file.getAbsolutePath();
     }
 }

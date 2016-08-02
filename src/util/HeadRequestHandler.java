@@ -26,6 +26,7 @@ package util;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 
 /**
@@ -33,37 +34,44 @@ import java.net.URL;
  *
  * @author hkhoi
  */
-public class HeadRequestUtil {
+public class HeadRequestHandler {
 
     private final String url;
     private final HttpURLConnection headRequest;
 
-    public enum Unit {
+    private long contentLength = -1;
+
+    public static enum Unit {
         BYTE, MEGABYTE;
     }
 
-    public HeadRequestUtil(String url) throws MalformedURLException, IOException {
+    public HeadRequestHandler(String url) throws MalformedURLException,
+            IOException, SocketTimeoutException {
         this.url = url;
         headRequest = (HttpURLConnection) (new URL(url)).openConnection();
         headRequest.setRequestMethod("HEAD");
         headRequest.setRequestProperty("User-Agent", Constant.USER_AGENT);
+        headRequest.setConnectTimeout(Constant.TIME_OUT);
     }
 
     public long getContentLength(Unit unit) throws MalformedURLException, IOException {
-        String contentLength = headRequest.getHeaderField("Content-Length");
-        if (contentLength == null || contentLength.isEmpty()) {
-            System.out.println(
-                    "INFO -- \tContent's size is unknown, download with 1 thread");
-            return Long.MAX_VALUE;
+        if (contentLength == -1) {
+            String contentLengthString = headRequest.getHeaderField("Content-Length");
+            if (contentLengthString == null || contentLengthString.isEmpty()) {
+                System.out.println(
+                        "INFO -- \tContent's size is unknown, download with 1 thread");
+                return Long.MAX_VALUE;
+            }
+            contentLength = Long.parseLong(contentLengthString);
         }
-        long result = Long.parseLong(contentLength);
+
         switch (unit) {
             case MEGABYTE:
-                result /= (1024 * 1024);
+                contentLength /= (1024 * 1024);
                 break;
         }
 
-        return result;
+        return contentLength;
     }
 
     public Plan[] plan(String filename, int parts)
@@ -98,7 +106,7 @@ public class HeadRequestUtil {
 
         return slavePlans;
     }
-
+    
     public int getReponseCode() throws IOException {
         return headRequest.getResponseCode();
     }

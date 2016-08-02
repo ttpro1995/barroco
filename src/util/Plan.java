@@ -24,6 +24,7 @@
 package util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -35,31 +36,39 @@ import java.net.URL;
 public class Plan {
 
     private final HttpURLConnection connection;
-    private final long start;
-    private long end;
-    private final String name;
+    private final long startByte;
+    private long endByte;
+    private final String fileAbsPath;
     private final int id;
     
     public Plan(String url, String name, int id,
             long start, long end) throws MalformedURLException, IOException {
         this.id = id;
-        this.start = start;
-        this.end = end;
-        this.name = name;
+        this.startByte = start;
+        this.endByte = end;
+        this.fileAbsPath = name;
         this.connection =
                 (HttpURLConnection) (new URL(url)).openConnection();
     }
 
-    public long getStart() {
-        return start;
+    public long bytes2Download() {
+        return endByte - startByte;
+    }
+    
+    public InputStream getInputStream() {
+        return null;
+    }
+    
+    public long getStartByte() {
+        return startByte;
     }
 
-    public long getEnd() {
-        return end;
+    public long getEndByte() {
+        return endByte;
     }
 
-    public String getName() {
-        return name;
+    public String getFileAbsPath() {
+        return fileAbsPath;
     }
 
     public HttpURLConnection getConnection() {
@@ -67,7 +76,7 @@ public class Plan {
     }
 
     public void setEnd(long end) {
-        this.end = end;
+        this.endByte = end;
     }
 
     public int getId() {
