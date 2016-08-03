@@ -28,14 +28,46 @@ package util;
  * @author hkhoi
  */
 public class UnitUtil {
-    
-    public static String displayTime(int seconds) {
+
+    private static final String[] TIME_UNIT
+            = {"miliseconds", "second", "minutes", "hours"};
+    private static final String[] SIZE_UNIT
+            = {"B", "KB", "MB", "GB"};
+
+    public static String displayTime(long time) {
         // TODO: Implement UnitUtil.displayTime(int second);
-        return "Time: Nothing to show now...";
+        int unit = 0;
+        if (time >= 1000) {
+            time /= 1000;
+            ++unit;
+        }
+        if (time >= 60) {
+            time /= 60;
+            ++unit;
+        }
+        if (time >= 60) {
+            time /= 60;
+            ++unit;
+        }
+
+        return "Downloaded in " + time + " " + TIME_UNIT[unit];
     }
-    
-    public static String displaySize(long bytes) {
+
+    public static String displaySize(long size) {
         // TODO: Implement UnitUtil.displayTime(long bytes);
-        return "Size: Nothing to show now...";
+        int unit = 0;
+        if (size >= 1024) {
+            size /= 1024;
+            ++unit;
+        }
+        if (size >= 1024) {
+            size /= 1024;
+            ++unit;
+        }
+        if (size >= 1024) {
+            size /= 1024;
+            ++unit;
+        }
+        return "File size:: " + size + SIZE_UNIT[unit];
     }
 }

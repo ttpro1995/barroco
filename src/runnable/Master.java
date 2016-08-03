@@ -61,7 +61,7 @@ public class Master implements Runnable {
 
         fileAbsPath = NameUtil.makeUniqueName(fileAbsPath);
         System.out.println(">>DEBUG: " + fileAbsPath);
-        
+
         this.fileAbsPath = fileAbsPath;
         this.connections = connections;
         this.urlString = urlString;
@@ -105,20 +105,12 @@ public class Master implements Runnable {
                     "\n--------------------MERGING PHASE--------------------\n");
             ByteStreamUtil.merge(plans, fileAbsPath);
 
-            long size = 0;
-
-            if (plans.length == 1) {
-                size = (new File(fileAbsPath)).length();
-            } else {
-                size = headRequestUtil.getContentLength();
-            }
-
+            long size = (new File(fileAbsPath)).length();
             long finishTime = (System.currentTimeMillis() - beginTime) / 1000;
-            String displayTime = UnitUtil.displayTime((int) finishTime);
 
-            System.out.printf("REPORT -- \tDownload finished in %s\n",
-                    displayTime);
-            System.out.printf("REPORT -- \tSize(MB) = %s", UnitUtil.displaySize(size));
+            System.out.println(UnitUtil.displaySize(size));
+            System.out.println(UnitUtil.displayTime(finishTime));
+
         } catch (InterruptedException | SocketTimeoutException ex) {
             Logger.getLogger(Master.class.getName()).log(Level.SEVERE,
                     "ABORT -- \t\tTime out!!", ex);
