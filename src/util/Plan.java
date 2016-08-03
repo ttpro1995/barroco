@@ -49,6 +49,7 @@ public class Plan {
         this.fileAbsPath = name;
         this.connection =
                 (HttpURLConnection) (new URL(url)).openConnection();
+        ConnectionUtil.setRange(connection, start, end);
     }
 
     public long bytes2Download() {

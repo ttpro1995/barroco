@@ -38,12 +38,7 @@ public class HeadRequestHandler {
 
     private final String url;
     private final HttpURLConnection headRequest;
-
     private long contentLength = -1;
-
-    public static enum Unit {
-        BYTE, MEGABYTE;
-    }
 
     public HeadRequestHandler(String url) throws MalformedURLException,
             IOException, SocketTimeoutException {
@@ -54,7 +49,7 @@ public class HeadRequestHandler {
         headRequest.setConnectTimeout(Constant.TIME_OUT);
     }
 
-    public long getContentLength(Unit unit) throws MalformedURLException, IOException {
+    public long getContentLength() throws MalformedURLException, IOException {
         if (contentLength == -1) {
             String contentLengthString = headRequest.getHeaderField("Content-Length");
             if (contentLengthString == null || contentLengthString.isEmpty()) {
@@ -64,20 +59,13 @@ public class HeadRequestHandler {
             }
             contentLength = Long.parseLong(contentLengthString);
         }
-
-        switch (unit) {
-            case MEGABYTE:
-                contentLength /= (1024 * 1024);
-                break;
-        }
-
         return contentLength;
     }
 
     public Plan[] plan(String filename, int parts)
             throws IOException {
         StringBuilder nameBuilder = new StringBuilder();
-        long total = getContentLength(Unit.BYTE);
+        long total = getContentLength();
         long partSize = Long.MAX_VALUE;
         long current = 0;
 

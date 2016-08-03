@@ -23,30 +23,20 @@
  */
 package util;
 
-import java.io.File;
-import org.apache.commons.io.FilenameUtils;
+import java.net.HttpURLConnection;
 
 /**
  *
  * @author hkhoi
  */
-public class NameUtil {
+public class ConnectionUtil {
 
-    public static String makeUniqueName(String fileAbsPath) {
-        String base = FilenameUtils.getName(fileAbsPath);
-        String path = FilenameUtils.getPath(fileAbsPath);
-
-        int postfix = 0;
-        
-        while (!isFilenameExisted(fileAbsPath)) {
-            
-        }
-        
-        return null;
-    }
-
-    public static boolean isFilenameExisted(String fileAbsPath) {
-        File file = new File(fileAbsPath);
-        return (file.exists() && !file.isDirectory());
+    public static void setRange(HttpURLConnection connection, long from, long to) {
+        String rangeOption = new StringBuilder("bytes=")
+                .append(from)
+                .append('-')
+                .append(to - 1).toString();
+        connection.setRequestProperty("Range", rangeOption);
+        connection.setRequestProperty("User-Agent", Constant.USER_AGENT);
     }
 }

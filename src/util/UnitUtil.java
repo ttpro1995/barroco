@@ -27,10 +27,15 @@ package util;
  *
  * @author hkhoi
  */
-public class TimeUtil {
+public class UnitUtil {
     
     public static String displayTime(int seconds) {
-        // TODO: Impleent TimeUtil.displayTime(int second);
-        return null;
+        // TODO: Implement UnitUtil.displayTime(int second);
+        return "Time: Nothing to show now...";
+    }
+    
+    public static String displaySize(long bytes) {
+        // TODO: Implement UnitUtil.displayTime(long bytes);
+        return "Size: Nothing to show now...";
     }
 }

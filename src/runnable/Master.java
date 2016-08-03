@@ -37,28 +37,32 @@ import util.Constant;
 import util.HeadRequestHandler;
 import util.NameUtil;
 import util.Plan;
-import util.TimeUtil;
+import util.UnitUtil;
 
 /**
- * Master takes URL, filename and number of connections to 
- * divide tasks for slaves
+ * Master takes URL, filename and number of connections to divide tasks for
+ * slaves
+ *
  * @author hkhoi
  */
 public class Master implements Runnable {
 
-    private final String filename;
+    private final String fileAbsPath;
     private final int connections;
     private final String urlString;
 
-    public Master(String filename, int connections, String urlString) {
-        if (filename == null || filename.isEmpty()) {
-            filename = FilenameUtils.getName(urlString);
-            if (filename == null || filename.isEmpty()) {
-                filename = NameUtil.makeUniqueName(Constant.DEFAULT_NAME);
+    public Master(String fileAbsPath, int connections, String urlString) {
+        if (fileAbsPath == null || fileAbsPath.isEmpty()) {
+            fileAbsPath = FilenameUtils.getName(urlString);
+            if (fileAbsPath == null || fileAbsPath.isEmpty()) {
+                fileAbsPath = Constant.DEFAULT_NAME;
             }
         }
 
-        this.filename = filename;
+        fileAbsPath = NameUtil.makeUniqueName(fileAbsPath);
+        System.out.println(">>DEBUG: " + fileAbsPath);
+        
+        this.fileAbsPath = fileAbsPath;
         this.connections = connections;
         this.urlString = urlString;
     }
@@ -72,7 +76,7 @@ public class Master implements Runnable {
 
             ExecutorService threadPool = Executors.newCachedThreadPool();
             HeadRequestHandler headRequestUtil = new HeadRequestHandler(urlString);
-            
+
             int reponseCode = headRequestUtil.getReponseCode();
 
             if (!headRequestUtil.isOK()) {
@@ -84,7 +88,7 @@ public class Master implements Runnable {
 
             System.out.println("REPORT -- \tSuccessful request");
             System.out.println("REPORT -- \tCalculating file parts...");
-            Plan[] plans = headRequestUtil.plan(filename, connections);
+            Plan[] plans = headRequestUtil.plan(fileAbsPath, connections);
             System.out.println(
                     "\n-----------------DOWNLOADING PHASE-------------------\n");
 
@@ -99,24 +103,22 @@ public class Master implements Runnable {
 
             System.out.println(
                     "\n--------------------MERGING PHASE--------------------\n");
-            ByteStreamUtil.merge(plans);
+            ByteStreamUtil.merge(plans, fileAbsPath);
 
-            float sizeMb = 0;
+            long size = 0;
 
             if (plans.length == 1) {
-                sizeMb = (new File(filename)).length() / 1024 / 1024;
+                size = (new File(fileAbsPath)).length();
             } else {
-                sizeMb
-                        = headRequestUtil.
-                        getContentLength(HeadRequestHandler.Unit.MEGABYTE);
+                size = headRequestUtil.getContentLength();
             }
-            
+
             long finishTime = (System.currentTimeMillis() - beginTime) / 1000;
-            String displayTime = TimeUtil.displayTime((int) finishTime);
-            
+            String displayTime = UnitUtil.displayTime((int) finishTime);
+
             System.out.printf("REPORT -- \tDownload finished in %s\n",
                     displayTime);
-            System.out.printf("REPORT -- \tSize(MB) = %.2f\n", sizeMb);
+            System.out.printf("REPORT -- \tSize(MB) = %s", UnitUtil.displaySize(size));
         } catch (InterruptedException | SocketTimeoutException ex) {
             Logger.getLogger(Master.class.getName()).log(Level.SEVERE,
                     "ABORT -- \t\tTime out!!", ex);
