@@ -33,16 +33,25 @@ import org.apache.commons.io.FilenameUtils;
 public class NameUtil {
 
     public static String makeUniqueName(String fileAbsPath) {
-        String base = FilenameUtils.getName(fileAbsPath);
         String path = FilenameUtils.getPath(fileAbsPath);
-
+        String base = FilenameUtils.getBaseName(fileAbsPath);
+        String extension = FilenameUtils.getExtension(fileAbsPath);
+        
+        StringBuilder builder = new StringBuilder();
+        
         int postfix = 0;
         
-        while (!isFilenameExisted(fileAbsPath)) {
-            
+        while (isFilenameExisted(fileAbsPath)) {
+            builder.setLength(0);
+            builder.append(path)
+                    .append(base)
+                    .append('_')
+                    .append(postfix++)
+                    .append('.')
+                    .append(extension);
+            fileAbsPath = builder.toString();
         }
-        
-        return null;
+        return fileAbsPath;
     }
 
     public static boolean isFilenameExisted(String fileAbsPath) {
