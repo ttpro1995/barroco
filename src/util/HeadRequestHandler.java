@@ -62,7 +62,7 @@ public class HeadRequestHandler {
         return contentLength;
     }
 
-    public Plan[] plan(String filename, int parts)
+    public Plan[] plan(String fileAbsPath, int parts)
             throws IOException {
         StringBuilder nameBuilder = new StringBuilder();
         long total = getContentLength();
@@ -70,8 +70,9 @@ public class HeadRequestHandler {
         long current = 0;
 
         if (total == Long.MAX_VALUE) {   // Undefined Content-Length
-            partSize = total / parts;
             parts = 1;
+        } else {
+            partSize = total / parts;
         }
 
         Plan[] slavePlans = new Plan[parts];
@@ -80,7 +81,7 @@ public class HeadRequestHandler {
             nameBuilder.setLength(0);   // Clear buffer
             nameBuilder
                     .append(Constant.PREFIX)
-                    .append(filename)
+                    .append(fileAbsPath)
                     .append(Constant.POSTFIX)
                     .append(i);
 

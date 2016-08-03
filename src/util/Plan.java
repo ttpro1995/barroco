@@ -56,8 +56,8 @@ public class Plan {
         return endByte - startByte;
     }
     
-    public InputStream getInputStream() {
-        return null;
+    public InputStream getInputStream() throws IOException {
+        return connection.getInputStream();
     }
     
     public long getStartByte() {

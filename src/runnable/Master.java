@@ -60,7 +60,6 @@ public class Master implements Runnable {
         }
 
         fileAbsPath = NameUtil.makeUniqueName(fileAbsPath);
-        System.out.println(">>DEBUG: " + fileAbsPath);
 
         this.fileAbsPath = fileAbsPath;
         this.connections = connections;
