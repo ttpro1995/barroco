@@ -49,7 +49,7 @@ public class UnitUtil {
             time /= 60;
             ++unit;
         }
-
+        
         return "Downloaded in " + time + " " + TIME_UNIT[unit];
     }
 
@@ -68,6 +68,6 @@ public class UnitUtil {
             size /= 1024;
             ++unit;
         }
-        return "File size:: " + size + SIZE_UNIT[unit];
+        return "File size: " + size + SIZE_UNIT[unit];
     }
 }

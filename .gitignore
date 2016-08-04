@@ -19,3 +19,4 @@ nbbuild.xml
 *.txt
 Test.java
 *.part*
+*.zip

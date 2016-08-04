@@ -51,8 +51,6 @@ public class Plan {
         this.connection
                 = (HttpURLConnection) (new URL(url)).openConnection();
         ConnectionUtil.setRange(connection, startByte, endByte);
-        System.out.println(">>DEBUG: Start/End=" + start + "/" + end);
-        System.out.println(">>DEBUG: Range=" + connection.getRequestProperty("Range"));
     }
 
     public long bytes2Download() {
@@ -82,7 +80,6 @@ public class Plan {
     public void setEnd(long end) {
         this.endByte = end;
         ConnectionUtil.setRange(connection, startByte, endByte);
-        System.out.println(">>DEBUG: Updated Range:" + connection.getRequestProperty("Range"));
     }
 
     public int getId() {

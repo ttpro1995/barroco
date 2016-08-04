@@ -70,7 +70,6 @@ public class Slave implements Runnable {
             }
             up = false;
             File curFile = new File(plan.getFileAbsPath());
-            System.out.println(">>DEBUG:" + curFile.getName() + ":" + curFile.length());
         }
     }
     

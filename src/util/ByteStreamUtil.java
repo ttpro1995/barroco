@@ -53,8 +53,7 @@ public class ByteStreamUtil {
             try (FileInputStream inStream = new FileInputStream(it.getFileAbsPath())) {
                 System.out.printf("MERGE -- \tMerging part %d\n", id++);
                 stream2File(inStream, fileAbsPath, true);
-                File curFile = new File(it.getFileAbsPath());
-                curFile.delete();
+                (new File(it.getFileAbsPath())).delete();
             }
         }
     }
@@ -63,7 +62,6 @@ public class ByteStreamUtil {
             throws FileNotFoundException, IOException {
         try (FileOutputStream outStream = new FileOutputStream(name, true)) {
             if (fileFlag) {
-                System.out.println(">>DEBUG: Merging:" + name);
                 try (WritableByteChannel channel = Channels.newChannel(outStream)) {
                     ((FileInputStream) inputStream).getChannel()
                             .transferTo(0, Long.MAX_VALUE, channel);

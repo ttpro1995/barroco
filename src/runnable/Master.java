@@ -105,7 +105,7 @@ public class Master implements Runnable {
             ByteStreamUtil.merge(plans, fileAbsPath);
 
             long size = (new File(fileAbsPath)).length();
-            long finishTime = (System.currentTimeMillis() - beginTime) / 1000;
+            long finishTime = (System.currentTimeMillis() - beginTime);
 
             System.out.println(UnitUtil.displaySize(size));
             System.out.println(UnitUtil.displayTime(finishTime));
