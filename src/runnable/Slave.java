@@ -23,10 +23,9 @@
  */
 package runnable;
 
-import java.io.File;
+import interfaces.SlaveOverseer;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import util.ByteStreamUtil;
@@ -40,14 +39,20 @@ import util.Plan;
  */
 public class Slave implements Runnable {
 
-    private final HttpURLConnection connection;
     private boolean up;
     private final Plan plan;
+    private Thread overseerThread = null;
 
     public Slave(Plan plan) {
         this.plan = plan;
         this.up = true;
-        this.connection = plan.getConnection();
+    }
+
+    public void addOverseer(SlaveOverseer overseer) {
+        if (overseer != null) {
+            overseerThread = new Thread(overseer);
+            overseer.setSlave(this);
+        }
     }
 
     @Override
@@ -55,6 +60,9 @@ public class Slave implements Runnable {
         InputStream inputStream = null;
         try {
             inputStream = plan.getInputStream();
+            if (overseerThread != null) {
+                overseerThread.start();
+            }
             ByteStreamUtil.stream2File(inputStream, plan.getFileAbsPath(), false);
         } catch (IOException ex) {
             Logger.getLogger(Slave.class.getName())
@@ -69,10 +77,9 @@ public class Slave implements Runnable {
                 }
             }
             up = false;
-            File curFile = new File(plan.getFileAbsPath());
         }
     }
-    
+
     public boolean isUp() {
         return up;
     }

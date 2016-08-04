@@ -21,22 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package util;
+package interfaces;
 
-import java.net.HttpURLConnection;
+import runnable.Master;
 
 /**
  *
  * @author hkhoi
  */
-public class ConnectionUtil {
-
-    public static void setRange(HttpURLConnection connection, long from, long to) {
-        String rangeOption = new StringBuilder("bytes=")
-                .append(from)
-                .append('-')
-                .append(to - 1).toString();
-        connection.setRequestProperty("Range", rangeOption);
-        connection.setRequestProperty("User-Agent", Config.USER_AGENT);
+public abstract class MasterOverseer implements Runnable {
+    
+    protected Master master;
+    
+    public void setMaster(Master master) {
+        this.master = master;
     }
 }

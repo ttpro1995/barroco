@@ -45,16 +45,14 @@ public class HeadRequestHandler {
         this.url = url;
         headRequest = (HttpURLConnection) (new URL(url)).openConnection();
         headRequest.setRequestMethod("HEAD");
-        headRequest.setRequestProperty("User-Agent", Constant.USER_AGENT);
-        headRequest.setConnectTimeout(Constant.TIME_OUT);
+        headRequest.setRequestProperty("User-Agent", Config.USER_AGENT);
+        headRequest.setConnectTimeout(Config.TIME_OUT);
     }
 
     public long getContentLength() throws MalformedURLException, IOException {
         if (contentLength == -1) {
             String contentLengthString = headRequest.getHeaderField("Content-Length");
             if (contentLengthString == null || contentLengthString.isEmpty()) {
-                System.out.println(
-                        "INFO -- \tContent's size is unknown, download with 1 thread");
                 return Long.MAX_VALUE;
             }
             contentLength = Long.parseLong(contentLengthString);
@@ -80,9 +78,9 @@ public class HeadRequestHandler {
         for (int i = 0; i < slavePlans.length; ++i) {
             nameBuilder.setLength(0);   // Clear buffer
             nameBuilder
-                    .append(Constant.PREFIX)
+                    .append(Config.PREFIX)
                     .append(fileAbsPath)
-                    .append(Constant.POSTFIX)
+                    .append(Config.POSTFIX)
                     .append(i);
 
             slavePlans[i] = new Plan(url, nameBuilder.toString(), i,

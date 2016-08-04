@@ -23,20 +23,15 @@
  */
 package util;
 
-import java.net.HttpURLConnection;
-
 /**
  *
  * @author hkhoi
  */
-public class ConnectionUtil {
-
-    public static void setRange(HttpURLConnection connection, long from, long to) {
-        String rangeOption = new StringBuilder("bytes=")
-                .append(from)
-                .append('-')
-                .append(to - 1).toString();
-        connection.setRequestProperty("Range", rangeOption);
-        connection.setRequestProperty("User-Agent", Config.USER_AGENT);
-    }
+public class Config {
+    protected static final String PREFIX = ".";   // Make a file hidden
+    protected static final String POSTFIX = ".part";
+    public static final String USER_AGENT = "Googlebot";
+    public static final int TIME_OUT = 10000;
+    public static final String DEFAULT_NAME = "web.html";
+    public static final int REFRESH_TIME = 150;
 }

@@ -23,26 +23,17 @@
  */
 package runnable;
 
-import java.io.File;
+import interfaces.SlaveOverseer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import util.Config;
 import util.Plan;
 
 /**
  *
  * @author hkhoi
  */
-public class SlaveOverseer implements Runnable {
-
-    private static final int REFRESH_TIME = 750;
-
-    private final Slave slave;
-    private final File file;
-
-    public SlaveOverseer(Slave slave) {
-        this.file = new File(slave.getPlan().getFileAbsPath());
-        this.slave = slave;
-    }
+public class ConsoleSlaveOverseer  extends SlaveOverseer{
 
     @Override
     public void run() {
@@ -57,9 +48,9 @@ public class SlaveOverseer implements Runnable {
                     id,
                     percentage);
             try {
-                Thread.sleep(REFRESH_TIME);
+                Thread.sleep(Config.REFRESH_TIME);
             } catch (InterruptedException ex) {
-                Logger.getLogger(SlaveOverseer.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ConsoleSlaveOverseer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         System.out.printf("REPORT ------------------- \t\tThread %d finished!\n", id);

@@ -21,22 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package util;
+package interfaces;
 
-import java.net.HttpURLConnection;
+import java.io.File;
+import runnable.Slave;
 
 /**
  *
  * @author hkhoi
  */
-public class ConnectionUtil {
+public abstract class SlaveOverseer implements Runnable {
+    
+    protected  Slave slave;
+    protected File file;
 
-    public static void setRange(HttpURLConnection connection, long from, long to) {
-        String rangeOption = new StringBuilder("bytes=")
-                .append(from)
-                .append('-')
-                .append(to - 1).toString();
-        connection.setRequestProperty("Range", rangeOption);
-        connection.setRequestProperty("User-Agent", Config.USER_AGENT);
+    public void setSlave(Slave slave) {
+        this.file = new File(slave.getPlan().getFileAbsPath());
+        this.slave = slave;
     }
 }

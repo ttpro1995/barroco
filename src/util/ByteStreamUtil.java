@@ -41,7 +41,6 @@ public class ByteStreamUtil {
 
     public static void merge(Plan[] info, String fileAbsPath) throws FileNotFoundException, IOException {
         if (info.length == 1) {
-            System.out.println("INFO -- \tMERGE: One file only, renaming...");
             File curFile = new File(info[0].getFileAbsPath());
             curFile.renameTo(new File(fileAbsPath));
             return;
@@ -51,7 +50,6 @@ public class ByteStreamUtil {
 
         for (Plan it : info) {
             try (FileInputStream inStream = new FileInputStream(it.getFileAbsPath())) {
-                System.out.printf("MERGE -- \tMerging part %d\n", id++);
                 stream2File(inStream, fileAbsPath, true);
                 (new File(it.getFileAbsPath())).delete();
             }

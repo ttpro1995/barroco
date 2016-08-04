@@ -78,8 +78,7 @@ public class Plan {
     }
 
     public void setEnd(long end) {
-        this.endByte = end;
-        ConnectionUtil.setRange(connection, startByte, endByte);
+        ConnectionUtil.setRange(connection, startByte, end);
     }
 
     public int getId() {

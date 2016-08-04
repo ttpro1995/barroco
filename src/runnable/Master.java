@@ -24,16 +24,12 @@
 package runnable;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.io.FilenameUtils;
 import util.ByteStreamUtil;
-import util.Constant;
+import util.Config;
 import util.HeadRequestHandler;
 import util.NameUtil;
 import util.Plan;
@@ -50,12 +46,12 @@ public class Master implements Runnable {
     private final String fileAbsPath;
     private final int connections;
     private final String urlString;
-
+    
     public Master(String fileAbsPath, int connections, String urlString) {
         if (fileAbsPath == null || fileAbsPath.isEmpty()) {
             fileAbsPath = FilenameUtils.getName(urlString);
             if (fileAbsPath == null || fileAbsPath.isEmpty()) {
-                fileAbsPath = Constant.DEFAULT_NAME;
+                fileAbsPath = Config.DEFAULT_NAME;
             }
         }
 
@@ -71,37 +67,27 @@ public class Master implements Runnable {
         try {
             long beginTime = System.currentTimeMillis();
 
-            System.out.println("REPORT -- \tPreparing to download...");
-
             ExecutorService threadPool = Executors.newCachedThreadPool();
             HeadRequestHandler headRequestUtil = new HeadRequestHandler(urlString);
 
             int reponseCode = headRequestUtil.getReponseCode();
 
             if (!headRequestUtil.isOK()) {
-                System.out.println("INFO -- \tResponse code: " + reponseCode);
-                System.out.println(
-                        "ERROR -- \tReponse = Not a successful response, terminating...");
-                return;
+                throw new Exception("Not a success reponse=" + reponseCode);
             }
 
-            System.out.println("REPORT -- \tSuccessful request");
-            System.out.println("REPORT -- \tCalculating file parts...");
             Plan[] plans = headRequestUtil.plan(fileAbsPath, connections);
-            System.out.println(
-                    "\n-----------------DOWNLOADING PHASE-------------------\n");
 
             for (Plan it : plans) {
                 Slave curSlave = new Slave(it);
+                // Add an overseer for each slave
+                curSlave.addOverseer(new ConsoleSlaveOverseer());
                 threadPool.submit(curSlave);
-                threadPool.submit(new SlaveOverseer(curSlave));
             }
 
             threadPool.shutdown();
             threadPool.awaitTermination(14, TimeUnit.DAYS);
 
-            System.out.println(
-                    "\n--------------------MERGING PHASE--------------------\n");
             ByteStreamUtil.merge(plans, fileAbsPath);
 
             long size = (new File(fileAbsPath)).length();
@@ -110,11 +96,8 @@ public class Master implements Runnable {
             System.out.println(UnitUtil.displaySize(size));
             System.out.println(UnitUtil.displayTime(finishTime));
 
-        } catch (InterruptedException | SocketTimeoutException ex) {
-            Logger.getLogger(Master.class.getName()).log(Level.SEVERE,
-                    "ABORT -- \t\tTime out!!", ex);
-        } catch (IOException ex) {
-            Logger.getLogger(Master.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+        } catch (Exception ex) {
+            System.err.println("Exception: " + ex.getMessage());
         }
     }
 }

@@ -21,16 +21,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package util;
+package runnable;
+
+import interfaces.MasterOverseer;
 
 /**
  *
  * @author hkhoi
  */
-public class Constant {
-    protected static final String PREFIX = ".";   // Make a file hidden
-    protected static final String POSTFIX = ".part";
-    public static final String USER_AGENT = "Googlebot";
-    public static final int TIME_OUT = 6000;
-    public static final String DEFAULT_NAME = "web.html";
+public class ConsoleMasterOverseer extends MasterOverseer{
+
+    @Override
+    public void run() {
+        
+    }
 }
