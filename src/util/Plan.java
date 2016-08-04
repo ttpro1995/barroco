@@ -31,6 +31,7 @@ import java.net.URL;
 
 /**
  * An instance of this class provides necessary information to class Downloader
+ *
  * @author hkhoi
  */
 public class Plan {
@@ -40,26 +41,28 @@ public class Plan {
     private long endByte;
     private final String fileAbsPath;
     private final int id;
-    
+
     public Plan(String url, String name, int id,
             long start, long end) throws MalformedURLException, IOException {
         this.id = id;
         this.startByte = start;
         this.endByte = end;
         this.fileAbsPath = name;
-        this.connection =
-                (HttpURLConnection) (new URL(url)).openConnection();
-        ConnectionUtil.setRange(connection, start, end);
+        this.connection
+                = (HttpURLConnection) (new URL(url)).openConnection();
+        ConnectionUtil.setRange(connection, startByte, endByte);
+        System.out.println(">>DEBUG: Start/End=" + start + "/" + end);
+        System.out.println(">>DEBUG: Range=" + connection.getRequestProperty("Range"));
     }
 
     public long bytes2Download() {
         return endByte - startByte;
     }
-    
+
     public InputStream getInputStream() throws IOException {
         return connection.getInputStream();
     }
-    
+
     public long getStartByte() {
         return startByte;
     }
@@ -78,6 +81,8 @@ public class Plan {
 
     public void setEnd(long end) {
         this.endByte = end;
+        ConnectionUtil.setRange(connection, startByte, endByte);
+        System.out.println(">>DEBUG: Updated Range:" + connection.getRequestProperty("Range"));
     }
 
     public int getId() {

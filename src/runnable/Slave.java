@@ -23,6 +23,7 @@
  */
 package runnable;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -68,6 +69,8 @@ public class Slave implements Runnable {
                 }
             }
             up = false;
+            File curFile = new File(plan.getFileAbsPath());
+            System.out.println(">>DEBUG:" + curFile.getName() + ":" + curFile.length());
         }
     }
     

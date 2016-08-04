@@ -53,7 +53,8 @@ public class ByteStreamUtil {
             try (FileInputStream inStream = new FileInputStream(it.getFileAbsPath())) {
                 System.out.printf("MERGE -- \tMerging part %d\n", id++);
                 stream2File(inStream, fileAbsPath, true);
-                (new File(it.getFileAbsPath())).delete();
+                File curFile = new File(it.getFileAbsPath());
+                curFile.delete();
             }
         }
     }

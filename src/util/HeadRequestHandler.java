@@ -91,6 +91,7 @@ public class HeadRequestHandler {
             current += partSize;
         }
 
+        System.out.println(">>DEBUG: Set Last End=" + total);
         slavePlans[slavePlans.length - 1].setEnd(total);
 
         return slavePlans;
