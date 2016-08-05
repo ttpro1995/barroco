@@ -21,3 +21,4 @@ Test.java
 *.part*
 *.zip
 *.mp4
+.dictionary.txt.part*
