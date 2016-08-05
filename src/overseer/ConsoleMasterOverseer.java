@@ -26,6 +26,7 @@ package overseer;
 import config.Const;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import runnable.Master;
 import runnable.Slave;
 import runnable.TrackableRunnable;
 
@@ -33,37 +34,48 @@ import runnable.TrackableRunnable;
  *
  * @author ar-khoi.hoang
  */
-public class ConsoleSlaveOverseer extends Overseer {
+public class ConsoleMasterOverseer extends Overseer {
 
-    private final Slave slave;
+    private final Master master;
+    private long total = -1;
 
-    public ConsoleSlaveOverseer(TrackableRunnable target) {
+    public ConsoleMasterOverseer(TrackableRunnable target) {
         super(target);
-        slave = (Slave) target;
+        master = (Master) target;
     }
 
     @Override
-    public long downloadedLength() {
-        return slave.getFile().length();
+    protected long downloadedLength() {
+        long sum = 0;
+
+        for (Slave slave : master.getSlaves()) {
+            sum += slave.getFile().length();
+        }
+
+        return sum;
     }
 
     @Override
-    public long totalLength() {
-        return slave.getPlan().total2Download();
+    protected long totalLength() {
+        if (total < 0) {
+            total = 0;
+            for (Slave slave : master.getSlaves()) {
+                total += slave.getPlan().total2Download();
+            }
+        }
+        return total;
     }
 
     @Override
     public void run() {
-        while (slave.stillAlive()) {
-            System.out.printf("Thread %d: %.2f%%\n",
-                    slave.getPlan().getId(), progress() * 100f);
+        while (master.stillAlive()) {
+            System.out.printf("Downloading: %.2f%%\n", progress() * 100f);
             try {
                 Thread.sleep(Const.REFRESH_TIME);
             } catch (InterruptedException ex) {
-                Logger.getLogger(ConsoleSlaveOverseer.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ConsoleMasterOverseer.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
-        System.out.printf("Thread %d is finished!\n", slave.getPlan().getId());
+        System.out.println("Finished!");
     }
 }

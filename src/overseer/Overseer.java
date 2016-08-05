@@ -37,7 +37,7 @@ public abstract class Overseer implements Runnable {
         this.target = target;
     }
     
-    protected float percentage() {
+    protected float progress() {
         return (float) downloadedLength() / totalLength();
     }
     

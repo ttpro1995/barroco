@@ -33,7 +33,6 @@ import config.Const;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import overseer.ConsoleSlaveOverseer;
 import util.HeadRequestHandler;
 import util.NameUtil;
 import util.Plan;
@@ -46,12 +45,12 @@ import util.UnitUtil;
  * @author hkhoi
  */
 public class Master implements TrackableRunnable {
-    
+
     private final String fileAbsPath;
     private boolean alive = false;
-    private Slave[] team;
+    private Slave[] slaves;
     private Plan[] plans;
-    
+
     public Master(String fileAbsPath, int connections, String urlString)
             throws IOException, Exception {
         if (fileAbsPath == null || fileAbsPath.isEmpty()) {
@@ -60,55 +59,62 @@ public class Master implements TrackableRunnable {
                 fileAbsPath = Const.DEFAULT_NAME;
             }
         }
-        
+
         fileAbsPath = NameUtil.makeUniqueName(fileAbsPath);
-        
+
         this.fileAbsPath = fileAbsPath;
-        
+
         HeadRequestHandler headRequestUtil = new HeadRequestHandler(urlString);
         int reponseCode = headRequestUtil.getReponseCode();
         if (!headRequestUtil.isOK()) {
             throw new Exception("Not a success reponse=" + reponseCode);
         }
         plans = headRequestUtil.plan(fileAbsPath, connections);
-        team = new Slave[connections];
+        slaves = new Slave[connections];
         for (int i = 0; i < plans.length; ++i) {
-            team[i] = new Slave(plans[i]);
+            slaves[i] = new Slave(plans[i]);
         }
     }
-    
+
     @Override
     public void run() {
         try {
             alive = true;
+            Thread overseer = new Thread(new overseer.ConsoleMasterOverseer(this));
+            overseer.start();
+            
             long beginTime = System.currentTimeMillis();
-            
+
             ExecutorService threadPool = Executors.newCachedThreadPool();
-            
-            for (Slave slave : team) {
+
+            for (Slave slave : slaves) {
                 threadPool.submit(slave);
-                threadPool.submit(new ConsoleSlaveOverseer(slave));
+//                threadPool.submit(new ConsoleSlaveOverseer(slave));
             }
-            
+
             threadPool.shutdown();
             threadPool.awaitTermination(14, TimeUnit.DAYS);
-            
+
             ByteStreamUtil.merge(plans, fileAbsPath);
-            
+
             long size = (new File(fileAbsPath)).length();
             long finishTime = (System.currentTimeMillis() - beginTime);
-            
+
             System.out.println(UnitUtil.displaySize(size));
             System.out.println(UnitUtil.displayTime(finishTime));
             alive = false;
-            
+
         } catch (IOException | InterruptedException ex) {
             Logger.getLogger(Master.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             alive = false;
         }
     }
-    
+
+    public Slave[] getSlaves() {
+        return slaves;
+    }
+
     @Override
     public boolean stillAlive() {
         return alive;
