@@ -34,4 +34,5 @@ public class Const {
     public static final int TIME_OUT = 10000;
     public static final String DEFAULT_NAME = "web.html";
     public static final int REFRESH_TIME = 150;
+    public static final int LOAD_BAR_LENGTH = 35;
 }

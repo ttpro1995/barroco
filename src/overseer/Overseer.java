@@ -50,4 +50,23 @@ public abstract class Overseer implements Runnable {
     protected abstract long downloadedLength();
     
     protected abstract long totalLength();
+    
+    protected static String loadBar(float percentage) {
+        int loaded = (int) (percentage * Const.LOAD_BAR_LENGTH);
+        int unloaded = Const.LOAD_BAR_LENGTH - loaded;
+        StringBuilder builder = new StringBuilder();
+        builder.append('[');
+        
+        for (int i = 0; i <= loaded; ++i) {
+            builder.append("=");
+        }
+        
+        for (int i = 0; i < unloaded - 1; ++i) {
+            builder.append(' ');
+        }
+         
+        builder.append(']');
+        
+        return builder.toString();
+    }
 }

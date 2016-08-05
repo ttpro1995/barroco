@@ -69,10 +69,10 @@ public class ConsoleMasterOverseer extends Overseer {
     @Override
     public void run() {
         long pre = 0;
-        
+
         while (master.stillAlive()) {
             float progress = progress();
-            System.out.printf("Downloading: %.2f%%\t\t%s\t\tSpeed: %s\r", progress * 100f,loadBar(20, progress) ,speed(pre));
+            System.out.printf("Downloading: %.2f%%\t\t%s\t\tSpeed: %s\r", progress * 100f, loadBar(progress), speed(pre));
             pre = downloadedLength();
             try {
                 Thread.sleep(Const.REFRESH_TIME);
@@ -82,23 +82,5 @@ public class ConsoleMasterOverseer extends Overseer {
         }
         System.out.println("Finished!");
     }
-    
-    private String loadBar(int scale, float percentage) {
-        int loaded = (int) (percentage * scale);
-        int unloaded = scale - loaded;
-        StringBuilder builder = new StringBuilder();
-        builder.append('[');
-        
-        for (int i = 0; i <= loaded; ++i) {
-            builder.append("=");
-        }
-        
-        for (int i = 0; i < unloaded - 1; ++i) {
-            builder.append(' ');
-        }
-         
-        builder.append(']');
-        
-        return builder.toString();
-    }
+
 }
