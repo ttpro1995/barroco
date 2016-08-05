@@ -50,6 +50,7 @@ public class Master implements TrackableRunnable {
     private boolean alive = false;
     private Slave[] slaves;
     private Plan[] plans;
+    private boolean monoThread = false;
 
     public Master(String fileAbsPath, int connections, String urlString)
             throws IOException, Exception {
@@ -70,7 +71,12 @@ public class Master implements TrackableRunnable {
             throw new Exception("Not a success reponse=" + reponseCode);
         }
         plans = headRequestUtil.plan(fileAbsPath, connections);
-        slaves = new Slave[connections];
+        
+        if (plans.length == 1) {
+            monoThread = true;
+        }
+        
+        slaves = new Slave[plans.length];
         for (int i = 0; i < plans.length; ++i) {
             slaves[i] = new Slave(plans[i]);
         }
@@ -115,6 +121,10 @@ public class Master implements TrackableRunnable {
         return slaves;
     }
 
+    public boolean isMonoThread() {
+        return monoThread;
+    }
+    
     @Override
     public boolean stillAlive() {
         return alive;
