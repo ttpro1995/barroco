@@ -49,25 +49,26 @@ public class UnitUtil {
                 }
             }
         }
-        return "Downloaded in " + time + " " + TIME_UNIT[unit];
+        return time + " " + TIME_UNIT[unit];
     }
 
     public static String displaySize(long size) {
         // TODO: Implement UnitUtil.displayTime(long bytes);
+        float result = size;
         int unit = 0;
-        if (size >= 1024) {
-            size /= 1024;
+        if (result >= 1024) {
+            result /= 1024;
             ++unit;
-            if (size >= 1024) {
-                size /= 1024;
+            if (result >= 1024) {
+                result /= 1024;
                 ++unit;
-                if (size >= 1024) {
-                    size /= 1024;
+                if (result >= 1024) {
+                    result /= 1024;
                     ++unit;
                 }
             }
         }
 
-        return "File size: " + size + SIZE_UNIT[unit];
+        return String.format("%.2f %s", result, SIZE_UNIT[unit]);
     }
 }

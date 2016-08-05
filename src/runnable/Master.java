@@ -100,8 +100,8 @@ public class Master implements TrackableRunnable {
             long size = (new File(fileAbsPath)).length();
             long finishTime = (System.currentTimeMillis() - beginTime);
 
-            System.out.println(UnitUtil.displaySize(size));
-            System.out.println(UnitUtil.displayTime(finishTime));
+            System.out.println("Downloaded: " + UnitUtil.displaySize(size));
+            System.out.println("Time: " + UnitUtil.displayTime(finishTime));
             alive = false;
 
         } catch (IOException | InterruptedException ex) {

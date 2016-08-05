@@ -23,7 +23,9 @@
  */
 package overseer;
 
+import config.Const;
 import runnable.TrackableRunnable;
+import util.UnitUtil;
 
 /**
  *
@@ -41,6 +43,10 @@ public abstract class Overseer implements Runnable {
         return (float) downloadedLength() / totalLength();
     }
     
+    protected String speed(long pre) {
+        long diff = downloadedLength() - pre;
+        return UnitUtil.displaySize(1000 * diff / Const.REFRESH_TIME) + "/s";
+    }
     protected abstract long downloadedLength();
     
     protected abstract long totalLength();

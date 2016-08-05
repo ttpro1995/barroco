@@ -68,8 +68,11 @@ public class ConsoleMasterOverseer extends Overseer {
 
     @Override
     public void run() {
+        long pre = 0;
+        
         while (master.stillAlive()) {
-            System.out.printf("Downloading: %.2f%%\n", progress() * 100f);
+            System.out.printf("Downloading: %.2f%%\tSpeed: %s\r", progress() * 100f, speed(pre));
+            pre = downloadedLength();
             try {
                 Thread.sleep(Const.REFRESH_TIME);
             } catch (InterruptedException ex) {
