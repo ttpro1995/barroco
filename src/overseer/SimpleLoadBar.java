@@ -77,7 +77,7 @@ public class SimpleLoadBar extends Overseer {
                 System.out.printf("Downloading: %.2f%%\t\t%s\t\tSpeed: %s     \r"
                         , progress * 100f, loadBar(progress), speed(pre));
             } else {
-                System.out.printf("Downloaded: %s\t\tSpeed: %s\r", UnitUtil.displaySize(downloadedLength()), speed(pre));
+                
             }
             pre = downloadedLength();
 
