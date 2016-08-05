@@ -36,20 +36,20 @@ public class UnitUtil {
 
     public static String displayTime(long time) {
         // TODO: Implement UnitUtil.displayTime(int second);
+        System.out.println(">>DEBUG: Raw:" + time);
         int unit = 0;
         if (time >= 1000) {
             time /= 1000;
             ++unit;
+            if (time >= 60) {
+                time /= 60;
+                ++unit;
+                if (time >= 60) {
+                    time /= 60;
+                    ++unit;
+                }
+            }
         }
-        if (time >= 60) {
-            time /= 60;
-            ++unit;
-        }
-        if (time >= 60) {
-            time /= 60;
-            ++unit;
-        }
-        
         return "Downloaded in " + time + " " + TIME_UNIT[unit];
     }
 
@@ -59,15 +59,16 @@ public class UnitUtil {
         if (size >= 1024) {
             size /= 1024;
             ++unit;
+            if (size >= 1024) {
+                size /= 1024;
+                ++unit;
+                if (size >= 1024) {
+                    size /= 1024;
+                    ++unit;
+                }
+            }
         }
-        if (size >= 1024) {
-            size /= 1024;
-            ++unit;
-        }
-        if (size >= 1024) {
-            size /= 1024;
-            ++unit;
-        }
+
         return "File size: " + size + SIZE_UNIT[unit];
     }
 }

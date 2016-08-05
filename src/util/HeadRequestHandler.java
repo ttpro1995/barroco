@@ -23,6 +23,7 @@
  */
 package util;
 
+import config.Const;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -45,8 +46,8 @@ public class HeadRequestHandler {
         this.url = url;
         headRequest = (HttpURLConnection) (new URL(url)).openConnection();
         headRequest.setRequestMethod("HEAD");
-        headRequest.setRequestProperty("User-Agent", Config.USER_AGENT);
-        headRequest.setConnectTimeout(Config.TIME_OUT);
+        headRequest.setRequestProperty("User-Agent", Const.USER_AGENT);
+        headRequest.setConnectTimeout(Const.TIME_OUT);
     }
 
     public long getContentLength() throws MalformedURLException, IOException {
@@ -78,9 +79,9 @@ public class HeadRequestHandler {
         for (int i = 0; i < slavePlans.length; ++i) {
             nameBuilder.setLength(0);   // Clear buffer
             nameBuilder
-                    .append(Config.PREFIX)
+                    .append(Const.PREFIX)
                     .append(fileAbsPath)
-                    .append(Config.POSTFIX)
+                    .append(Const.POSTFIX)
                     .append(i);
 
             slavePlans[i] = new Plan(url, nameBuilder.toString(), i,

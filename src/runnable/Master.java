@@ -29,7 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FilenameUtils;
 import util.ByteStreamUtil;
-import util.Config;
+import config.Const;
 import util.HeadRequestHandler;
 import util.NameUtil;
 import util.Plan;
@@ -51,7 +51,7 @@ public class Master implements Runnable {
         if (fileAbsPath == null || fileAbsPath.isEmpty()) {
             fileAbsPath = FilenameUtils.getName(urlString);
             if (fileAbsPath == null || fileAbsPath.isEmpty()) {
-                fileAbsPath = Config.DEFAULT_NAME;
+                fileAbsPath = Const.DEFAULT_NAME;
             }
         }
 

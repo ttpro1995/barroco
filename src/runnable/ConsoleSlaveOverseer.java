@@ -26,7 +26,7 @@ package runnable;
 import interfaces.SlaveOverseer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import util.Config;
+import config.Const;
 import util.Plan;
 
 /**
@@ -48,7 +48,7 @@ public class ConsoleSlaveOverseer  extends SlaveOverseer{
                     id,
                     percentage);
             try {
-                Thread.sleep(Config.REFRESH_TIME);
+                Thread.sleep(Const.REFRESH_TIME);
             } catch (InterruptedException ex) {
                 Logger.getLogger(ConsoleSlaveOverseer.class.getName()).log(Level.SEVERE, null, ex);
             }

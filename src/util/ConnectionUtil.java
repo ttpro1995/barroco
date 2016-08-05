@@ -23,6 +23,7 @@
  */
 package util;
 
+import config.Const;
 import java.net.HttpURLConnection;
 
 /**
@@ -37,6 +38,6 @@ public class ConnectionUtil {
                 .append('-')
                 .append(to - 1).toString();
         connection.setRequestProperty("Range", rangeOption);
-        connection.setRequestProperty("User-Agent", Config.USER_AGENT);
+        connection.setRequestProperty("User-Agent", Const.USER_AGENT);
     }
 }
