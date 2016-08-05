@@ -57,7 +57,7 @@ public abstract class Overseer implements Runnable {
         StringBuilder builder = new StringBuilder();
         builder.append('[');
         
-        for (int i = 0; i <= loaded; ++i) {
+        for (int i = 0; i < loaded; ++i) {
             builder.append("=");
         }
         
