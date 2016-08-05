@@ -33,6 +33,6 @@ public class Const {
     public static final String USER_AGENT = "Googlebot";
     public static final int TIME_OUT = 10000;
     public static final String DEFAULT_NAME = "web.html";
-    public static final int REFRESH_TIME = 150;
+    public static final int REFRESH_TIME = 350;
     public static final int LOAD_BAR_LENGTH = 35;
 }

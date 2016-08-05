@@ -20,5 +20,4 @@ nbbuild.xml
 Test.java
 *.part*
 *.zip
-*.sh
 *.mp4
