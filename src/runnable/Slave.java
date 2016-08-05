@@ -96,4 +96,16 @@ public class Slave implements TrackableRunnable {
     public File getFile() {
         return file;
     }
+    
+    public long downloadedLength() {
+        return this.getFile().length();
+    }
+    
+    public long totalLength() {
+        return this.getPlan().total2Download();
+    }
+    
+    public float progress() {
+        return (float) downloadedLength() / totalLength();
+    }
 }

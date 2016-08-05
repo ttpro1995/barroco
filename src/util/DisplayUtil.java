@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2016 hkhoi.
+ * Copyright 2016 ar-khoi.hoang.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,18 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package config;
+package util;
+
+import config.Const;
 
 /**
  *
- * @author hkhoi
+ * @author ar-khoi.hoang
  */
-public class Const {
-    public static final String PREFIX = ".";
-    public static final String POSTFIX = ".part";
-    public static final String USER_AGENT = "Googlebot";
-    public static final int TIME_OUT = 10000;
-    public static final String DEFAULT_NAME = "web.html";
-    public static final int REFRESH_TIME = 350;
-    public static final int LOAD_BAR_LENGTH = 12;
+public class DisplayUtil {
+
+    public static String loadBar(float percentage, int id) {
+        int loaded = (int) (percentage * Const.LOAD_BAR_LENGTH);
+        int unloaded = Const.LOAD_BAR_LENGTH - loaded;
+        StringBuilder builder = new StringBuilder();
+
+        for (int i = 0; i < loaded; ++i) {
+            builder.append("=");
+        }
+
+        builder.append(id);
+        
+        for (int i = 0; i < unloaded; ++i) {
+            builder.append('.');
+        }
+        return builder.toString();
+    }
 }

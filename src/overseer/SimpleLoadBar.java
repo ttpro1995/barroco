@@ -35,12 +35,12 @@ import util.UnitUtil;
  *
  * @author ar-khoi.hoang
  */
-public class ConsoleMasterOverseer extends Overseer {
+public class SimpleLoadBar extends Overseer {
 
     private final Master master;
     private long total = -1;
 
-    public ConsoleMasterOverseer(TrackableRunnable target) {
+    public SimpleLoadBar(TrackableRunnable target) {
         super(target);
         master = (Master) target;
     }
@@ -84,7 +84,7 @@ public class ConsoleMasterOverseer extends Overseer {
             try {
                 Thread.sleep(Const.REFRESH_TIME);
             } catch (InterruptedException ex) {
-                Logger.getLogger(ConsoleMasterOverseer.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SimpleLoadBar.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         System.out.println("Finished!");

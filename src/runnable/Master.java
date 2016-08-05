@@ -33,6 +33,7 @@ import config.Const;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import overseer.MultiLoadBar;
 import util.HeadRequestHandler;
 import util.NameUtil;
 import util.Plan;
@@ -51,6 +52,7 @@ public class Master implements TrackableRunnable {
     private Slave[] slaves;
     private Plan[] plans;
     private boolean monoThread = false;
+    private long total = -1;
 
     public Master(String fileAbsPath, int connections, String urlString)
             throws IOException, Exception {
@@ -86,7 +88,7 @@ public class Master implements TrackableRunnable {
     public void run() {
         try {
             alive = true;
-            Thread overseer = new Thread(new overseer.ConsoleMasterOverseer(this));
+            Thread overseer = new Thread(new MultiLoadBar(this));
             overseer.start();
             
             long beginTime = System.currentTimeMillis();
@@ -106,7 +108,7 @@ public class Master implements TrackableRunnable {
             long size = (new File(fileAbsPath)).length();
             long finishTime = (System.currentTimeMillis() - beginTime);
 
-            System.out.println("Downloaded: " + UnitUtil.displaySize(size));
+            System.out.println("\nDownloaded: " + UnitUtil.displaySize(size));
             System.out.println("Time: " + UnitUtil.displayTime(finishTime));
             alive = false;
 
@@ -128,5 +130,34 @@ public class Master implements TrackableRunnable {
     @Override
     public boolean stillAlive() {
         return alive;
+    }
+    
+    public long downloadedLength() {
+        long sum = 0;
+
+        for (Slave slave : this.getSlaves()) {
+            sum += slave.getFile().length();
+        }
+
+        return sum;
+    }
+    
+    public long totalLength() {
+        if (total < 0) {
+            total = 0;
+            for (Slave slave : this.getSlaves()) {
+                total += slave.getPlan().total2Download();
+            }
+        }
+        return total;
+    }
+    
+    public float progress() {
+        return (float) downloadedLength() / totalLength();
+    }
+    
+    public String speed(long pre) {
+        long diff = downloadedLength() - pre;
+        return UnitUtil.displaySize(1000 * diff / Const.REFRESH_TIME) + "/s";
     }
 }
