@@ -36,7 +36,6 @@ public class UnitUtil {
 
     public static String displayTime(long time) {
         // TODO: Implement UnitUtil.displayTime(int second);
-        System.out.println(">>DEBUG: Raw:" + time);
         int unit = 0;
         if (time >= 1000) {
             time /= 1000;

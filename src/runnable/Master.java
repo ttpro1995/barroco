@@ -30,6 +30,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FilenameUtils;
 import util.ByteStreamUtil;
 import config.Const;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import overseer.ConsoleSlaveOverseer;
 import util.HeadRequestHandler;
 import util.NameUtil;
 import util.Plan;
@@ -41,63 +45,72 @@ import util.UnitUtil;
  *
  * @author hkhoi
  */
-public class Master implements Runnable {
-
-    private final String fileAbsPath;
-    private final int connections;
-    private final String urlString;
+public class Master implements TrackableRunnable {
     
-    public Master(String fileAbsPath, int connections, String urlString) {
+    private final String fileAbsPath;
+    private boolean alive = false;
+    private Slave[] team;
+    private Plan[] plans;
+    
+    public Master(String fileAbsPath, int connections, String urlString)
+            throws IOException, Exception {
         if (fileAbsPath == null || fileAbsPath.isEmpty()) {
             fileAbsPath = FilenameUtils.getName(urlString);
             if (fileAbsPath == null || fileAbsPath.isEmpty()) {
                 fileAbsPath = Const.DEFAULT_NAME;
             }
         }
-
+        
         fileAbsPath = NameUtil.makeUniqueName(fileAbsPath);
-
+        
         this.fileAbsPath = fileAbsPath;
-        this.connections = connections;
-        this.urlString = urlString;
+        
+        HeadRequestHandler headRequestUtil = new HeadRequestHandler(urlString);
+        int reponseCode = headRequestUtil.getReponseCode();
+        if (!headRequestUtil.isOK()) {
+            throw new Exception("Not a success reponse=" + reponseCode);
+        }
+        plans = headRequestUtil.plan(fileAbsPath, connections);
+        team = new Slave[connections];
+        for (int i = 0; i < plans.length; ++i) {
+            team[i] = new Slave(plans[i]);
+        }
     }
-
+    
     @Override
     public void run() {
         try {
+            alive = true;
             long beginTime = System.currentTimeMillis();
-
+            
             ExecutorService threadPool = Executors.newCachedThreadPool();
-            HeadRequestHandler headRequestUtil = new HeadRequestHandler(urlString);
-
-            int reponseCode = headRequestUtil.getReponseCode();
-
-            if (!headRequestUtil.isOK()) {
-                throw new Exception("Not a success reponse=" + reponseCode);
+            
+            for (Slave slave : team) {
+                threadPool.submit(slave);
+                threadPool.submit(new ConsoleSlaveOverseer(slave));
             }
-
-            Plan[] plans = headRequestUtil.plan(fileAbsPath, connections);
-
-            for (Plan it : plans) {
-                Slave curSlave = new Slave(it);
-                // Add an overseer for each slave
-                curSlave.addOverseer(new ConsoleSlaveOverseer());
-                threadPool.submit(curSlave);
-            }
-
+            
             threadPool.shutdown();
             threadPool.awaitTermination(14, TimeUnit.DAYS);
-
+            
             ByteStreamUtil.merge(plans, fileAbsPath);
-
+            
             long size = (new File(fileAbsPath)).length();
             long finishTime = (System.currentTimeMillis() - beginTime);
-
+            
             System.out.println(UnitUtil.displaySize(size));
             System.out.println(UnitUtil.displayTime(finishTime));
-
-        } catch (Exception ex) {
-            System.err.println("Exception: " + ex.getMessage());
+            alive = false;
+            
+        } catch (IOException | InterruptedException ex) {
+            Logger.getLogger(Master.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            alive = false;
         }
+    }
+    
+    @Override
+    public boolean stillAlive() {
+        return alive;
     }
 }

@@ -84,4 +84,8 @@ public class Plan {
     public int getId() {
         return id;
     }
+
+    public long total2Download() {
+        return endByte - startByte;
+    }
 }
