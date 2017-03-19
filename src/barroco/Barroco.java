@@ -16,7 +16,7 @@ public class Barroco {
      * @param args the command line arguments
      */
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         // TODO code application logic here
         String file_name = args[0];
         String url = args[1];
