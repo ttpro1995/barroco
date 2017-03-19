@@ -24,6 +24,7 @@
 package runnable;
 
 import interfaces.SlaveOverseer;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Level;
@@ -37,15 +38,17 @@ import util.Plan;
  *
  * @author hkhoi
  */
-public class Slave implements Runnable {
+public class Slave implements TrackableRunnable {
 
-    private boolean up;
+    private boolean alive;
     private final Plan plan;
     private Thread overseerThread = null;
+    private final File file;
 
     public Slave(Plan plan) {
         this.plan = plan;
-        this.up = true;
+        this.alive = false;
+        file = new File(plan.getFileAbsPath());
     }
 
     public void addOverseer(SlaveOverseer overseer) {
@@ -59,6 +62,7 @@ public class Slave implements Runnable {
     public void run() {
         InputStream inputStream = null;
         try {
+            alive = true;
             inputStream = plan.getInputStream();
             if (overseerThread != null) {
                 overseerThread.start();
@@ -76,15 +80,32 @@ public class Slave implements Runnable {
                             .log(Level.SEVERE, null, ex);
                 }
             }
-            up = false;
+            alive = false;
         }
-    }
-
-    public boolean isUp() {
-        return up;
     }
 
     public Plan getPlan() {
         return plan;
+    }
+
+    @Override
+    public boolean stillAlive() {
+        return alive;
+    }
+
+    public File getFile() {
+        return file;
+    }
+    
+    public long downloadedLength() {
+        return this.getFile().length();
+    }
+    
+    public long totalLength() {
+        return this.getPlan().total2Download();
+    }
+    
+    public float progress() {
+        return (float) downloadedLength() / totalLength();
     }
 }

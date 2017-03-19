@@ -30,6 +30,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FilenameUtils;
 import util.ByteStreamUtil;
 import config.Const;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import overseer.MultiLoadBar;
 import util.HeadRequestHandler;
 import util.NameUtil;
 import util.Plan;
@@ -41,13 +45,17 @@ import util.UnitUtil;
  *
  * @author hkhoi
  */
-public class Master implements Runnable {
+public class Master implements TrackableRunnable {
 
     private final String fileAbsPath;
-    private final int connections;
-    private final String urlString;
-    
-    public Master(String fileAbsPath, int connections, String urlString) {
+    private boolean alive = false;
+    private Slave[] slaves;
+    private Plan[] plans;
+    private boolean monoThread = false;
+    private long total = -1;
+
+    public Master(String fileAbsPath, int connections, String urlString)
+            throws IOException, Exception {
         if (fileAbsPath == null || fileAbsPath.isEmpty()) {
             fileAbsPath = FilenameUtils.getName(urlString);
             if (fileAbsPath == null || fileAbsPath.isEmpty()) {
@@ -58,31 +66,38 @@ public class Master implements Runnable {
         fileAbsPath = NameUtil.makeUniqueName(fileAbsPath);
 
         this.fileAbsPath = fileAbsPath;
-        this.connections = connections;
-        this.urlString = urlString;
+
+        HeadRequestHandler headRequestUtil = new HeadRequestHandler(urlString);
+        int reponseCode = headRequestUtil.getReponseCode();
+        if (!headRequestUtil.isOK()) {
+            throw new Exception("Not a success reponse=" + reponseCode);
+        }
+        plans = headRequestUtil.plan(fileAbsPath, connections);
+        
+        if (plans.length == 1) {
+            monoThread = true;
+        }
+        
+        slaves = new Slave[plans.length];
+        for (int i = 0; i < plans.length; ++i) {
+            slaves[i] = new Slave(plans[i]);
+        }
     }
 
     @Override
     public void run() {
         try {
+            alive = true;
+            Thread overseer = new Thread(new MultiLoadBar(this));
+            overseer.start();
+            
             long beginTime = System.currentTimeMillis();
 
             ExecutorService threadPool = Executors.newCachedThreadPool();
-            HeadRequestHandler headRequestUtil = new HeadRequestHandler(urlString);
 
-            int reponseCode = headRequestUtil.getReponseCode();
-
-            if (!headRequestUtil.isOK()) {
-                throw new Exception("Not a success reponse=" + reponseCode);
-            }
-
-            Plan[] plans = headRequestUtil.plan(fileAbsPath, connections);
-
-            for (Plan it : plans) {
-                Slave curSlave = new Slave(it);
-                // Add an overseer for each slave
-                curSlave.addOverseer(new ConsoleSlaveOverseer());
-                threadPool.submit(curSlave);
+            for (Slave slave : slaves) {
+                threadPool.submit(slave);
+//                threadPool.submit(new ConsoleSlaveOverseer(slave));
             }
 
             threadPool.shutdown();
@@ -93,11 +108,56 @@ public class Master implements Runnable {
             long size = (new File(fileAbsPath)).length();
             long finishTime = (System.currentTimeMillis() - beginTime);
 
-            System.out.println(UnitUtil.displaySize(size));
-            System.out.println(UnitUtil.displayTime(finishTime));
+            System.out.println("\nDownloaded: " + UnitUtil.displaySize(size));
+            System.out.println("Time: " + UnitUtil.displayTime(finishTime));
+            alive = false;
 
-        } catch (Exception ex) {
-            System.err.println("Exception: " + ex.getMessage());
+        } catch (IOException | InterruptedException ex) {
+            Logger.getLogger(Master.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            alive = false;
         }
+    }
+
+    public Slave[] getSlaves() {
+        return slaves;
+    }
+
+    public boolean isMonoThread() {
+        return monoThread;
+    }
+    
+    @Override
+    public boolean stillAlive() {
+        return alive;
+    }
+    
+    public long downloadedLength() {
+        long sum = 0;
+
+        for (Slave slave : this.getSlaves()) {
+            sum += slave.getFile().length();
+        }
+
+        return sum;
+    }
+    
+    public long totalLength() {
+        if (total < 0) {
+            total = 0;
+            for (Slave slave : this.getSlaves()) {
+                total += slave.getPlan().total2Download();
+            }
+        }
+        return total;
+    }
+    
+    public float progress() {
+        return (float) downloadedLength() / totalLength();
+    }
+    
+    public String speed(long pre) {
+        long diff = downloadedLength() - pre;
+        return UnitUtil.displaySize(1000 * diff / Const.REFRESH_TIME) + "/s";
     }
 }

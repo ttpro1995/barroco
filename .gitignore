@@ -16,6 +16,8 @@ src/test/
 Test.java
 *.part*
 *.zip
+*.mp4
+.dictionary.txt.part*
 
 
 # https://github.com/github/gitignore/blob/master/Global/NetBeans.gitignore
